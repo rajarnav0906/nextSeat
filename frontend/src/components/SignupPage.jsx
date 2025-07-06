@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiUser, FiMail, FiLock, FiArrowRight } from 'react-icons/fi';
+import { FiUser, FiMail, FiLock } from 'react-icons/fi';
 import { useGoogleLogin } from '@react-oauth/google';
-import { googleAuth} from '../api/api.js';
+import { googleAuth, manualSignup } from '../api/api.js';
 import { toast } from 'react-hot-toast';
 
 const SignupPage = () => {
@@ -12,7 +12,7 @@ const SignupPage = () => {
     password: '',
     collegeId: '',
     declaredGender: 'male',
-    branch: 'CSE'
+    branch: 'CSE',
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -22,28 +22,36 @@ const SignupPage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
- const handleSubmit = async (e) => {
-
- };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await manualSignup(formData);
+      toast.success('Verification link sent!');
+      navigate('/verify-email-notice');
+    } catch (err) {
+      const message = err.response?.data?.message || 'Signup failed.';
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleGoogleSignup = async (authResult) => {
     try {
       if (authResult.code) {
         const response = await googleAuth(authResult.code);
         const { token, user } = response.data;
-        
         localStorage.setItem('user-info', JSON.stringify({
           email: user.email,
           name: user.name,
           image: user.image,
           token
         }));
-        
         navigate('/dashboard');
       }
-    } catch (error) {
+    } catch {
       toast.error('Google signup failed. Please try again.');
-      console.error("Google signup error:", error);
     }
   };
 
@@ -54,218 +62,129 @@ const SignupPage = () => {
   });
 
   return (
-    <div className="p-8 max-w-md mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h2>
-        <p className="text-gray-600">Join us today</p>
-      </div>
+    <div className="min-h-screen bg-[#F9F5F0] flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-[#1F2937]">Create your account</h2>
+          <p className="text-[#6B7280] mt-1 text-sm">Join the community today</p>
+        </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Name Field */}
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-            Full Name
-          </label>
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiUser className="h-5 w-5 text-gray-400" />
-            </div>
+            <FiUser className="absolute top-3.5 left-3 text-[#9CA3AF]" />
             <input
-              id="name"
-              name="name"
               type="text"
-              required
-              minLength="3"
+              name="name"
+              placeholder="Full Name"
               value={formData.name}
               onChange={handleChange}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="John Doe"
+              className="w-full pl-10 pr-4 py-2.5 bg-[#F3F4F6] border border-[#E5E7EB] text-[#1F2937] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
+              required
             />
           </div>
-        </div>
 
-        {/* Email Field */}
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email Address
-          </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiMail className="h-5 w-5 text-gray-400" />
-            </div>
+            <FiMail className="absolute top-3.5 left-3 text-[#9CA3AF]" />
             <input
-              id="email"
-              name="email"
               type="email"
-              required
+              name="email"
+              placeholder="Email Address"
               value={formData.email}
               onChange={handleChange}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="you@example.com"
+              className="w-full pl-10 pr-4 py-2.5 bg-[#F3F4F6] border border-[#E5E7EB] text-[#1F2937] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
+              required
             />
           </div>
-        </div>
 
-        {/* College ID Field */}
-        <div>
-          <label htmlFor="collegeId" className="block text-sm font-medium text-gray-700 mb-1">
-            College ID
-          </label>
+          <div className="relative">
+            <FiLock className="absolute top-3.5 left-3 text-[#9CA3AF]" />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full pl-10 pr-4 py-2.5 bg-[#F3F4F6] border border-[#E5E7EB] text-[#1F2937] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
+              required
+            />
+          </div>
+
           <input
-            id="collegeId"
-            name="collegeId"
             type="text"
-            required
+            name="collegeId"
+            placeholder="College ID"
             value={formData.collegeId}
             onChange={handleChange}
-            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Your college ID"
+            className="w-full py-2.5 px-4 bg-[#F3F4F6] border border-[#E5E7EB] text-[#1F2937] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
+            required
           />
-        </div>
 
-        {/* Gender Field */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Gender
-          </label>
-          <div className="flex space-x-4">
-            <label className="inline-flex items-center">
+          <div className="flex items-center gap-6 text-sm text-[#374151]">
+            <label className="flex items-center">
               <input
                 type="radio"
                 name="declaredGender"
                 value="male"
                 checked={formData.declaredGender === 'male'}
                 onChange={handleChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="ml-2 text-gray-700">Male</span>
+                className="mr-2"
+              /> Male
             </label>
-            <label className="inline-flex items-center">
+            <label className="flex items-center">
               <input
                 type="radio"
                 name="declaredGender"
                 value="female"
                 checked={formData.declaredGender === 'female'}
                 onChange={handleChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="ml-2 text-gray-700">Female</span>
+                className="mr-2"
+              /> Female
             </label>
           </div>
-        </div>
 
-        {/* Branch Field */}
-        <div>
-          <label htmlFor="branch" className="block text-sm font-medium text-gray-700 mb-1">
-            Branch
-          </label>
           <select
-            id="branch"
             name="branch"
             value={formData.branch}
             onChange={handleChange}
-            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full py-2.5 px-4 bg-[#F3F4F6] border border-[#E5E7EB] text-[#1F2937] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
           >
             <option value="CSE">Computer Science</option>
             <option value="ECE">Electronics</option>
             <option value="ME">Mechanical</option>
             <option value="CE">Civil</option>
           </select>
-        </div>
 
-        {/* Password Field */}
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiLock className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              minLength="8"
-              value={formData.password}
-              onChange={handleChange}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="••••••••"
-            />
-          </div>
-          <p className="mt-1 text-xs text-gray-500">
-            Use 8+ characters with a mix of letters, numbers & symbols
-          </p>
-        </div>
-
-        {/* Terms Checkbox */}
-        <div className="flex items-center">
-          <input
-            id="terms"
-            name="terms"
-            type="checkbox"
-            required
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
-            I agree to the <Link to="/terms" className="text-blue-600 hover:text-blue-500">Terms</Link> and{' '}
-            <Link to="/privacy" className="text-blue-600 hover:text-blue-500">Privacy Policy</Link>
-          </label>
-        </div>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-            loading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
-          }`}
-        >
-          {loading ? (
-            <>
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Creating account...
-            </>
-          ) : (
-            'Create Account'
-          )}
-        </button>
-      </form>
-
-      {/* Social Signup Section */}
-      <div className="mt-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Or sign up with</span>
-          </div>
-        </div>
-
-        <div className="mt-4">
           <button
-            onClick={googleSignup}
-            type="button"
-            className="w-full flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            type="submit"
+            disabled={loading}
+            className="w-full py-2.5 bg-[#3B82F6] hover:bg-[#2563EB] text-white font-semibold rounded-lg transition"
           >
-            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12.545 10.239v3.821h5.445c-.712 2.315-2.647 3.972-5.445 3.972-3.332 0-6.033-2.701-6.033-6.032s2.701-6.032 6.033-6.032c1.498 0 2.866 0.549 3.921 1.453l2.814-2.814c-1.784-1.664-4.153-2.675-6.735-2.675-5.522 0-10 4.477-10 10s4.478 10 10 10c8.396 0 10-7.524 10-10 0-0.167-0.007-0.334-0.016-0.5h-9.984z" />
-            </svg>
-            Continue with Google
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
-        </div>
-      </div>
+        </form>
 
-      <div className="mt-4 text-center text-sm text-gray-600">
-        Already have an account?{' '}
-        <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
-          Sign in
-        </Link>
+        <div className="text-center text-[#6B7280] my-4 text-sm">or</div>
+
+        <button
+          onClick={googleSignup}
+          type="button"
+          className="w-full flex items-center justify-center gap-3 py-2.5 border border-[#E5E7EB] rounded-lg bg-white hover:bg-[#F3F4F6] transition text-[#1F2937] font-medium"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 533.5 544.3">
+            <path fill="#4285F4" d="M533.5 278.4c0-17.4-1.5-34-4.3-50.2H272v95h146.9c-6.4 34.4-25.7 63.6-54.7 83.1v68h88.4c51.7-47.6 80.9-117.7 80.9-196.9z" />
+            <path fill="#34A853" d="M272 544.3c73.6 0 135.3-24.4 180.3-66.3l-88.4-68c-24.5 16.4-55.7 26-91.9 26-70.7 0-130.6-47.8-152-111.9H28.1v70.5C72.8 480.7 165.4 544.3 272 544.3z" />
+            <path fill="#FBBC05" d="M120 323.1c-10.5-31.4-10.5-65.2 0-96.6V156H28.1c-35.7 71.3-35.7 156.5 0 227.8l91.9-60.7z" />
+            <path fill="#EA4335" d="M272 107.7c39.9 0 75.7 13.7 103.9 40.6l77.9-77.9C407.3 24.1 345.6 0 272 0 165.4 0 72.8 63.6 28.1 156l91.9 70.5c21.4-64.1 81.3-111.9 152-111.9z" />
+          </svg>
+          Sign up with Google
+        </button>
+
+        <p className="text-sm text-center text-[#6B7280] mt-6">
+          Already have an account?{' '}
+          <Link to="/login" className="text-[#6366F1] hover:underline font-medium">
+            Sign in
+          </Link>
+        </p>
       </div>
     </div>
   );
