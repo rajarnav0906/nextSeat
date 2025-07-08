@@ -8,7 +8,8 @@ import { useState } from 'react';
 import RefreshHandler from './components/RefreshHandler';
 import VerifySuccess from './pages/VerifySuccess';
 import VerifyFailed from './pages/VerifyFailed';
-import EmailVerificationNotice from './pages/EmailVerificationNotice'; 
+import EmailVerificationNotice from './pages/EmailVerificationNotice';
+import { Toaster } from 'react-hot-toast'; // ✅
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -21,6 +22,7 @@ function App() {
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <BrowserRouter>
         <RefreshHandler setIsAuthenticated={setIsAuthenticated} />
+        <Toaster position="top-right" toastOptions={{ duration: 4000 }} /> {/* ✅ Toasts */}
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<GoogleLogin />} />
@@ -28,7 +30,7 @@ function App() {
           <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
           <Route path="/verify-success" element={<VerifySuccess />} />
           <Route path="/verify-failed" element={<VerifyFailed />} />
-          <Route path="/verify-email-notice" element={<EmailVerificationNotice />} /> {/* ✅ NEW */}
+          <Route path="/verify-email-notice" element={<EmailVerificationNotice />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </BrowserRouter>

@@ -7,6 +7,7 @@ import express from 'express';
 import cors from 'cors';
 import connectDB from './connections/db.js';
 import authRouter from './routes/authRouter.js';
+// import idUploadRouter from './routes/idUploadRouter.js'
 
 const app = express();
 
@@ -28,6 +29,9 @@ connectDB();
 
 // Routes
 app.use('/auth', authRouter);
+
+// app.use('/upload-id', idUploadRouter);
+
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

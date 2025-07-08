@@ -25,13 +25,26 @@ export const googleAuth = async (code) => {
   }
 };
 
-
-// manual login
+// Manual Login
 export const manualLogin = async (data) => {
   try {
     return await api.post('/login', data);
   } catch (error) {
     console.error('Manual login error:', error);
+    throw error;
+  }
+};
+
+// Upload ID Card
+export const uploadIdCard = async (formData) => {
+  try {
+    return await api.post('/upload-id', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  } catch (error) {
+    console.error('ID card upload error:', error);
     throw error;
   }
 };

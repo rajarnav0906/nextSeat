@@ -31,20 +31,23 @@ const userSchema = new mongoose.Schema({
   },
   collegeId: {
     type: String,
-    required: true,
+    required: false,
     unique: true,
     trim: true
   },
   declaredGender: {
     type: String,
     enum: ['male', 'female'],
-    required: true
+    default: null
   },
   branch: {
     type: String,
-    enum: ['CSE', 'ECE', 'EE', 'PIE', 'MME', 'ME', 'ECM', 'CE'],
-    default: 'CSE'
+    enum: ['Production and Industrial Engineering', 'Electrical Engineering', 'Civil Engineering', 'Mechanical Engineering', 'Computer Science Engineering'],
+    default: null
   },
+  regNumber: { type: String, trim: true, default:null },
+  programme: { type: String, trim: true, default:null },
+
   isVerified: {
     type: Boolean,
     default: false

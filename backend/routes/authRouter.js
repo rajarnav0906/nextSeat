@@ -1,6 +1,7 @@
 // backend/routes/authRouter.js
 import { Router } from 'express';
 import { googleLogin,manualLogin,signup, verifyEmail} from '../controllers/authController.js';
+import idUploadRouter from './idUploadRouter.js';
 
 const router = Router();
 
@@ -20,5 +21,8 @@ router.get('/verify-email', verifyEmail);
 
 // manual login
 router.post('/login', manualLogin);
+
+// id card upload
+router.use('/upload-id', idUploadRouter);
 
 export default router;

@@ -1,53 +1,54 @@
-import React from 'react'
-import { useEffect } from 'react';
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react';
+import IDUpload from './IDUpload';
+import { useNavigate } from 'react-router-dom';
 
-function Dashboard() {
-  const [userInfo, setUserInfo] = useState(null);
+const Dashboard = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const data = localStorage.getItem('user-info');
-    const userData = JSON.parse(data);
-    setUserInfo(userData);
-  }, [])
+    const info = JSON.parse(localStorage.getItem('user-info'));
+    if (!info) return navigate('/login');
+    setUser(info);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('user-info');
     navigate('/login');
-  }
+  };
+
+  const updateUser = (updated) => {
+    setUser(updated);
+    localStorage.setItem('user-info', JSON.stringify(updated));
+  };
+
+  if (!user) return null;
+
+  const showUpload = !user.declaredGender || !user.branch;
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-md overflow-hidden p-6">
-        <div className="flex flex-col items-center space-y-4">
-          {userInfo?.image && (
-            <img 
-              src={userInfo.image} 
-              alt={userInfo.email} 
-              className="w-32 h-32 rounded-full object-cover border-4 border-blue-500"
-            />
-          )}
-          
-          <h1 className="text-2xl font-bold text-gray-800">Welcome, {userInfo?.name}</h1>
-          
-          <div className="w-full bg-gray-50 p-4 rounded-lg">
-            <h3 className="text-lg text-gray-600">
-              <span className="font-semibold">Email:</span> {userInfo?.email}
-            </h3>
-          </div>
-          
-          <button 
-            onClick={handleLogout}
-            className="mt-6 px-6 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
-          >
-            Logout
-          </button>
-        </div>
+    <div className="min-h-screen bg-[#FAFFCA] text-[#2D2D2D] p-6">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold">Welcome, {user.name}</h1>
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-[#5A827E] hover:bg-[#84AE92] text-white rounded-lg"
+        >
+          Logout
+        </button>
       </div>
-    </div>
-  )
-}
 
-export default Dashboard
+      {showUpload ? (
+        <IDUpload userId={user._id} onSuccess={updateUser} />
+      ) : (
+        <div className="bg-white rounded-xl p-6 shadow-lg max-w-md">
+          <h2 className="text-xl font-semibold mb-2">Your Details</h2>
+          <p><strong>Gender:</strong> {user.declaredGender}</p>
+          <p><strong>Branch:</strong> {user.branch}</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Dashboard;
