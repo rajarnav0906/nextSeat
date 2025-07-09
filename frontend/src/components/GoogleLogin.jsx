@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FiMail, FiLock } from 'react-icons/fi';
 import { useGoogleLogin } from '@react-oauth/google';
 import { googleAuth, manualLogin } from '../api/api.js';
+import Sidebar from './Sidebar.jsx';
 
 const GoogleLogin = () => {
   const [email, setEmail] = useState('');
@@ -40,6 +41,7 @@ const GoogleLogin = () => {
 
   return (
     <div className="min-h-screen bg-[#FAFFCA] flex items-center justify-center px-4">
+      
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 border border-[#DDE6CC]">
         <h2 className="text-3xl font-bold text-[#2D2D2D] text-center mb-6">Welcome Back</h2>
         

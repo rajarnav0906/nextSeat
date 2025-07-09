@@ -10,6 +10,7 @@ import VerifySuccess from './pages/VerifySuccess';
 import VerifyFailed from './pages/VerifyFailed';
 import EmailVerificationNotice from './pages/EmailVerificationNotice';
 import { Toaster } from 'react-hot-toast'; // ✅
+import LandingPage from './pages/LandingPage';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -24,7 +25,8 @@ function App() {
         <RefreshHandler setIsAuthenticated={setIsAuthenticated} />
         <Toaster position="top-right" toastOptions={{ duration: 4000 }} /> {/* ✅ Toasts */}
         <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          {/* <Route path="/" element={<Navigate to="/login" replace />} /> */}
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<GoogleLogin />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
