@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -13,6 +13,7 @@ import {
 export default function Sidebar({ collapsed, onToggle, mobileOpen, setMobileOpen }) {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(false);
+  const sidebarRef = useRef();
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -21,13 +22,25 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, setMobileOpen
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Close sidebar on outside click (mobile only)
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (mobileOpen && sidebarRef.current && !sidebarRef.current.contains(e.target)) {
+        setMobileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [mobileOpen]);
+
   const sidebarWidth = collapsed ? 72 : 240;
 
   return (
     <>
-      {/* Mobile Sidebar Drawer */}
+      {/* Mobile Sidebar */}
       {isMobile && mobileOpen && (
         <motion.aside
+          ref={sidebarRef}
           initial={{ x: -300 }}
           animate={{ x: 0 }}
           exit={{ x: -300 }}
