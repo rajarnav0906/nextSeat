@@ -156,7 +156,7 @@ const handleExploreClick = () => {
                 desc: "Chat securely, finalize details, and travel together stress-free."
               }
             ].map(({ step, desc }) => (
-              <div key={step} className="p-6 border-l-4 border-[#50C878] bg-[#F5F7FA] rounded-xl shadow">
+              <div key={step} className="p-6 border-l-4 border-[#4A90E2] bg-[#F5F7FA] rounded-xl shadow">
                 <h3 className="text-lg font-semibold mb-2">{step}</h3>
                 <p className="text-sm text-gray-600">{desc}</p>
               </div>

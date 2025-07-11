@@ -1,38 +1,92 @@
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
-import { GoogleOAuthProvider } from '@react-oauth/google';
-import GoogleLogin from './components/GoogleLogin';
-import SignupPage from './components/SignupPage';
-import Dashboard from './components/Dashboard';
-import PageNotFound from './components/PageNotFound';
-import { useState } from 'react';
-import RefreshHandler from './components/RefreshHandler';
-import VerifySuccess from './pages/VerifySuccess';
-import VerifyFailed from './pages/VerifyFailed';
-import EmailVerificationNotice from './pages/EmailVerificationNotice';
-import { Toaster } from 'react-hot-toast'; // ✅
-import LandingPage from './pages/LandingPage';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { useState } from "react";
+import { Toaster } from "react-hot-toast";
+
+import RefreshHandler from "./components/RefreshHandler";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
+import MainLayout from "./components/MainLayout";
+
+import LandingPage from "./pages/LandingPage";
+import GoogleLogin from "./components/GoogleLogin";
+import SignupPage from "./components/SignupPage";
+import Dashboard from "./components/Dashboard";
+import IDUpload from "./components/IDUpload";
+
+import EmailVerificationNotice from "./pages/EmailVerificationNotice";
+import VerifySuccess from "./pages/VerifySuccess";
+import VerifyFailed from "./pages/VerifyFailed";
+import PageNotFound from "./components/PageNotFound";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  const PrivateRoute = ({ element }) => {
-    return isAuthenticated ? element : <Navigate to="/login" />;
-  };
 
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <BrowserRouter>
         <RefreshHandler setIsAuthenticated={setIsAuthenticated} />
-        <Toaster position="top-right" toastOptions={{ duration: 4000 }} /> {/* ✅ Toasts */}
+        <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
         <Routes>
-          {/* <Route path="/" element={<Navigate to="/login" replace />} /> */}
           <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<GoogleLogin />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/dashboard" element={<PrivateRoute element={<Dashboard />} />} />
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <GoogleLogin />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <PublicRoute>
+                <SignupPage />
+              </PublicRoute>
+            }
+          />
+
+          <Route
+            path="/verify-email-notice"
+            element={<EmailVerificationNotice />}
+          />
           <Route path="/verify-success" element={<VerifySuccess />} />
           <Route path="/verify-failed" element={<VerifyFailed />} />
-          <Route path="/verify-email-notice" element={<EmailVerificationNotice />} />
+
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/upload-id"
+            element={
+              <ProtectedRoute checkVerifiedOnly={true}>
+                <IDUpload />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/travel"
+            element={
+              <MainLayout>
+                <div>Travel Page Coming Soon</div>
+              </MainLayout>
+            }
+          />
+          <Route
+            path="/tickets"
+            element={
+              <MainLayout>
+                <div>Tickets Page Coming Soon</div>
+              </MainLayout>
+            }
+          />
+
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </BrowserRouter>

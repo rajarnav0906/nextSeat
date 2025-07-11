@@ -42,11 +42,11 @@ const userSchema = new mongoose.Schema({
   },
   branch: {
     type: String,
-    enum: ['Production and Industrial Engineering', 'Electrical Engineering', 'Civil Engineering', 'Mechanical Engineering', 'Computer Science Engineering'],
+    enum: ['PRODUCTION AND INDUSTRIAL ENGINEERING', 'ELECTRICAL ENGINEERING', 'CIVIL ENGINEERING', 'MECHANICAL ENGINEERING', 'COMPUTER SCIENCE ENGINEERING', 'ELECTRONICS AND COMPUTATIONAL MECHANICS', 'ELECTRONICS AND COMMUNICATION ENGINEERING'],
     default: null
   },
-  regNumber: { type: String, trim: true, default:null },
-  programme: { type: String, trim: true, default:null },
+  // regNumber: { type: String, trim: true, default:null },
+  // programme: { type: String, trim: true, default:null },
 
   isVerified: {
     type: Boolean,

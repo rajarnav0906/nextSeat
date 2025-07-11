@@ -63,7 +63,8 @@ const GoogleLogin = () => {
           marginLeft: isDesktop ? `${sidebarWidth}px` : "0px"
         }}
       >
-        <Navbar setMobileOpen={setMobileOpen} />
+        <Navbar onMenuClick={() => setMobileOpen(true)} />
+
 
         <div className="flex flex-col-reverse lg:flex-row items-center justify-center min-h-[calc(100vh-80px)] px-6 py-10 gap-12">
           {/* Form */}
