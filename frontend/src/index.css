@@ -13,3 +13,21 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.react-calendar__tile.highlight-tile {
+  border: 2px solid #4A90E2 !important;
+  border-radius: 9999px; /* fully circular */
+  font-weight: 600;
+  color: #2D2D2D !important;
+  background-color: transparent !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.react-calendar__tile.highlight-tile:hover {
+  border-color: #3A7AD9 !important;
+  color: #2D2D2D !important;
+  background-color: transparent !important;
+}
+
+
+

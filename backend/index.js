@@ -7,7 +7,24 @@ import express from 'express';
 import cors from 'cors';
 import connectDB from './connections/db.js';
 import authRouter from './routes/authRouter.js';
-// import idUploadRouter from './routes/idUploadRouter.js'
+import tripRouter from './routes/tripRouter.js';
+
+
+
+
+// import jwt from 'jsonwebtoken';
+
+// const token = jwt.sign(
+//   { id: '64eabc1234567abcd89ef012' },  // replace with your actual user _id
+//   'your_jwt_secret',                   // replace with your .env JWT_SECRET
+//   { expiresIn: '5d' }
+// );
+
+// console.log(token);
+
+
+
+
 
 const app = express();
 
@@ -30,8 +47,8 @@ connectDB();
 // Routes
 app.use('/auth', authRouter);
 
-// app.use('/upload-id', idUploadRouter);
-
+// trip route
+app.use('/api/trips', tripRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

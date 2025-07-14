@@ -112,6 +112,7 @@ export const signup = async (req, res) => {
       email,
       password,
       authMethod: 'local',
+      collegeId: `manual-${crypto.randomBytes(4).toString('hex')}`,
       emailVerificationToken: token,
       emailVerificationExpires: tokenExpiry
       // declaredGender and branch will default to null
@@ -122,8 +123,10 @@ export const signup = async (req, res) => {
 
     return res.status(201).json({ message: 'Signup successful. Please verify your email.' });
   } catch (err) {
-    return res.status(500).json({ message: 'Error during signup', error: err.message });
-  }
+  console.error("Signup error:", err);  // ← Add this line
+  return res.status(500).json({ message: 'Error during signup', error: err.message });
+}
+
 };
 
 // Email verification

@@ -18,6 +18,8 @@ import EmailVerificationNotice from "./pages/EmailVerificationNotice";
 import VerifySuccess from "./pages/VerifySuccess";
 import VerifyFailed from "./pages/VerifyFailed";
 import PageNotFound from "./components/PageNotFound";
+import TravelPage from "./pages/TravelPage";
+import AddTripPage from "./pages/AddTripPage";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -62,6 +64,14 @@ function App() {
             }
           />
           <Route
+  path="/add-trip"
+  element={
+    <MainLayout>
+      <AddTripPage />
+    </MainLayout>
+  }
+/>
+          <Route
             path="/upload-id"
             element={
               <ProtectedRoute checkVerifiedOnly={true}>
@@ -71,13 +81,13 @@ function App() {
           />
 
           <Route
-            path="/travel"
-            element={
-              <MainLayout>
-                <div>Travel Page Coming Soon</div>
-              </MainLayout>
-            }
-          />
+  path="/travel"
+  element={
+    <MainLayout>
+      <TravelPage />
+    </MainLayout>
+  }
+/>
           <Route
             path="/tickets"
             element={

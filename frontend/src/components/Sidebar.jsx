@@ -6,7 +6,6 @@ import {
   Route,
   Ticket,
   User,
-  ChevronLeft,
 } from "lucide-react";
 
 export default function Sidebar({ collapsed, onToggle, mobileOpen, setMobileOpen }) {
@@ -47,12 +46,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, setMobileOpen
           className="fixed top-0 left-0 h-screen w-64 bg-white z-50 shadow-xl flex flex-col py-6 px-4"
         >
           <SidebarUser user={user} />
-          <SidebarNav
-            location={location}
-            collapsed={false}
-            onLinkClick={() => setMobileOpen(false)}
-            user={user}
-          />
+          <SidebarNav location={location} collapsed={false} onLinkClick={() => setMobileOpen(false)} user={user} />
         </motion.aside>
       )}
 
@@ -69,12 +63,9 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, setMobileOpen
             <SidebarNav location={location} collapsed={collapsed} user={user} />
           </div>
 
-          {/* Bottom Collapse Button (Chevron rotates) */}
+          {/* Collapse Button */}
           <div className="flex justify-center mt-4">
-            <button
-              onClick={onToggle}
-              className="text-[#4A90E2] hover:text-[#3A7AD9] transition"
-            >
+            <button onClick={onToggle} className="text-[#4A90E2] hover:text-[#3A7AD9] transition">
               <motion.svg
                 width="24"
                 height="24"
@@ -120,8 +111,34 @@ function SidebarNav({ location, collapsed, onLinkClick, user }) {
     { to: "/tickets", icon: <Ticket size={18} />, label: "Ticket Exchange" },
   ];
 
+  const dashboardItem = {
+    to: "/dashboard",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M3 3v18h18V3H3zm3 3h3v3H6V6zm0 6h3v3H6v-3zm0 6h3v3H6v-3zm6-12h3v3h-3V6zm0 6h3v3h-3v-3zm0 6h3v3h-3v-3zm6-12h3v3h-3V6zm0 6h3v3h-3v-3z"></path>
+      </svg>
+    ),
+    label: "Dashboard",
+  };
+
+  const showDashboard =
+    user?.isVerified &&
+    user?.branch &&
+    user.branch !== "null" &&
+    user.branch !== "" &&
+    user?.declaredGender &&
+    user.declaredGender !== "null" &&
+    user.declaredGender !== "";
+
   return (
-    <nav className="space-y-3 w-full mt-2">
+    <nav className="space-y-3 w-full mt-2 relative">
       {items.map(({ to, icon, label }) => (
         <SidebarItem
           key={to}
@@ -134,7 +151,17 @@ function SidebarNav({ location, collapsed, onLinkClick, user }) {
         />
       ))}
 
-      {/* Login / Logout Button */}
+      {showDashboard && (
+        <SidebarItem
+          to={dashboardItem.to}
+          icon={dashboardItem.icon}
+          label={dashboardItem.label}
+          collapsed={collapsed}
+          active={location.pathname === dashboardItem.to}
+          onClick={onLinkClick}
+        />
+      )}
+
       {!user ? (
         <SidebarItem
           to="/login"
@@ -162,7 +189,7 @@ function SidebarNav({ location, collapsed, onLinkClick, user }) {
 
 function SidebarItem({ to, icon, label, collapsed, active, onClick, redOutline }) {
   const className = `
-    flex items-center px-3 py-2 rounded-lg font-medium transition-all duration-150
+    group relative flex items-center px-3 py-2 rounded-lg font-medium transition-all duration-150
     ${active ? "bg-[#4A90E2]/10 text-[#4A90E2]" : "text-gray-700 hover:bg-gray-200"}
     ${redOutline ? " text-red-500 hover:bg-red-100" : ""}
   `;
@@ -182,6 +209,13 @@ function SidebarItem({ to, icon, label, collapsed, active, onClick, redOutline }
       >
         {label}
       </motion.span>
+
+      {/* Previous Better Hover Tooltip */}
+      {collapsed && (
+        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-sm px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 pointer-events-none whitespace-nowrap">
+          {label}
+        </div>
+      )}
     </>
   );
 

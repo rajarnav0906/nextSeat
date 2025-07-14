@@ -1,4 +1,3 @@
-// backend/routes/idUploadRouter.js
 import express from 'express';
 import multer from 'multer';
 import mongoose from 'mongoose';
