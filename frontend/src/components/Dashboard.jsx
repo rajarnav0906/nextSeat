@@ -9,6 +9,8 @@ import { v4 as uuidv4 } from "uuid";
 import { Link } from "react-router-dom";
 import { getMyTrips } from "../api/api";
 import { CalendarDays, Clock, PlusCircle } from "lucide-react";
+import { useRefresh } from "../context/RefreshContext.jsx";
+
 
 export default function Dashboard() {
   const [collapsed, setCollapsed] = useState(false);
@@ -19,6 +21,9 @@ export default function Dashboard() {
   const user = JSON.parse(localStorage.getItem("user-info"));
   const sidebarWidth = collapsed ? 72 : 240;
 
+  const { refreshFlag } = useRefresh();
+
+
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 768);
     handleResize();
@@ -26,65 +31,71 @@ export default function Dashboard() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    const fetchTrips = async () => {
-      try {
-        const data = await getMyTrips();
-        setTrips(data);
-        const allDates = [];
+useEffect(() => {
+  const fetchTrips = async () => {
+    try {
+      const data = await getMyTrips();
+      setTrips(data);
+      const allDates = [];
 
-        for (const t of data) {
-          if (t.date) {
-            allDates.push({ date: new Date(t.date), label: `${t.from} → ${t.to}` });
-          }
-
-          if (t.legs && t.legs.length > 0) {
-            t.legs.forEach(l => {
-              if (l.date) {
-                allDates.push({ date: new Date(l.date), label: `${l.from} → ${l.to}` });
-              }
-            });
-          }
+      for (const t of data) {
+        if (t.date) {
+          allDates.push({ date: new Date(t.date), label: `${t.from} → ${t.to}` });
         }
 
-        setMarkedDates(allDates);
-      } catch (err) {
-        console.error("Failed to load trips:", err);
+        if (t.legs && t.legs.length > 0) {
+          t.legs.forEach((l) => {
+            if (l.date) {
+              allDates.push({ date: new Date(l.date), label: `${l.from} → ${l.to}` });
+            }
+          });
+        }
       }
-    };
-    fetchTrips();
-  }, []);
+
+      setMarkedDates(allDates);
+    } catch (err) {
+      console.error("Failed to load trips:", err);
+    }
+  };
+
+  fetchTrips();
+}, [refreshFlag]); // 👈 reacts to changes
+
 
   const countStatus = (status) => trips.filter((t) => t.status === status).length;
 
-  const tileClassName = ({ date, view }) => {
-    if (view === "month") {
-      const d = date.toISOString().slice(0, 10);
-      return markedDates.some(md => md.date.toISOString().slice(0, 10) === d)
-        ? "highlight-tile"
-        : null;
-    }
-  };
+const tileClassName = ({ date, view }) => {
+  if (view === "month") {
+    const d = date.toLocaleDateString('en-CA'); // 👈 Local YYYY-MM-DD
+    return markedDates.some(md => md.date.toLocaleDateString('en-CA') === d)
+      ? "highlight-tile"
+      : null;
+  }
+};
 
-  const tileContent = ({ date, view }) => {
-    if (view !== "month") return null;
 
-    const matched = markedDates.find(md =>
-      md.date.toISOString().slice(0, 10) === date.toISOString().slice(0, 10)
+const tileContent = ({ date, view }) => {
+  if (view !== "month") return null;
+
+  const d = date.toLocaleDateString('en-CA'); // 👈 Match format
+
+  const matched = markedDates.find(md =>
+    md.date.toLocaleDateString('en-CA') === d
+  );
+
+  if (matched) {
+    const tooltipId = uuidv4();
+    return (
+      <>
+        <div data-tip={matched.label} data-for={tooltipId}></div>
+        <ReactTooltip id={tooltipId} effect="solid" place="top" />
+      </>
     );
+  }
 
-    if (matched) {
-      const tooltipId = uuidv4();
-      return (
-        <>
-          <div data-tip={matched.label} data-for={tooltipId}></div>
-          <ReactTooltip id={tooltipId} effect="solid" place="top" />
-        </>
-      );
-    }
+  return null;
+};
 
-    return null;
-  };
 
   return (
     <div className="flex min-h-screen bg-[#F5F7FA]">

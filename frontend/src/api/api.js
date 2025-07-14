@@ -108,11 +108,22 @@ export const createTrip = async (tripData) => {
 // delete the trip
 // Delete a trip
 export const deleteTrip = async (tripId) => {
-  const res = await axios.delete(`${API_BASE}/trips/${tripId}`, {
-    headers: getAuthHeader()
-  });
-  return res.data;
+  try {
+    const headers = getAuthHeader();
+    console.log("🛡️ Sending DELETE with headers:", headers);
+
+    const res = await axios.delete(`${API_BASE}/trips/${tripId}`, {
+      headers
+    });
+
+    console.log("✅ Trip deleted from backend:", res.data);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Failed to delete trip. Error:", err.response?.data || err.message);
+    throw err;
+  }
 };
+
 
 
 

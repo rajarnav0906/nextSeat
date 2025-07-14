@@ -128,17 +128,34 @@ router.put('/:id', protect, async (req, res) => {
 // Delete a trip
 router.delete('/:id', protect, async (req, res) => {
   try {
-    const trip = await Trip.findById(req.params.id);
-    if (!trip) return res.status(404).json({ message: 'Trip not found' });
-    if (!trip.user.equals(req.user._id)) return res.status(403).json({ message: 'Not authorized' });
+    // console.log("🗑️ DELETE Trip Request");
+    // console.log("🔐 Authenticated User ID:", req.user._id);
+    // console.log("📌 Trip ID to delete:", req.params.id);
 
-    await trip.remove();
+    const trip = await Trip.findById(req.params.id);
+    if (!trip) {
+      // console.log("❌ Trip not found");
+      return res.status(404).json({ message: 'Trip not found' });
+    }
+
+    // console.log("👤 Trip belongs to:", trip.user.toString());
+
+    if (trip.user.toString() !== req.user._id.toString()) {
+      // console.log("🚫 Unauthorized delete attempt by:", req.user._id);
+      return res.status(403).json({ message: 'Not authorized to delete this trip' });
+    }
+
+    await Trip.findByIdAndDelete(req.params.id);
+    // console.log("✅ Trip deleted successfully");
     res.json({ message: 'Trip deleted' });
-    
+
   } catch (err) {
-    res.status(500).json({ message: 'Delete failed' });
+    console.error("❌ Error deleting trip:", err);
+    res.status(500).json({ message: 'Delete failed', error: err.message });
   }
 });
+
+
 
 // Discover matching trips
 
@@ -192,8 +209,8 @@ router.get('/discover/:tripId', protect, async (req, res) => {
     const results = {};
     const baseLegs = toLegArray(baseTrip);
 
-    console.log(`🧠 Base Trip: ${baseTrip._id} (${baseTrip.from} → ${baseTrip.to})`);
-    console.log("👉 Base Legs:", baseLegs);
+    // console.log(`🧠 Base Trip: ${baseTrip._id} (${baseTrip.from} → ${baseTrip.to})`);
+    // console.log("👉 Base Legs:", baseLegs);
 
     for (const baseLeg of baseLegs) {
       const legKey = `${baseLeg.from} → ${baseLeg.to}`;
@@ -204,10 +221,10 @@ router.get('/discover/:tripId', protect, async (req, res) => {
 
         const otherLegs = toLegArray(otherTrip);
 
-        // ✅ Case 1: Base leg matches any otherTrip's leg
+        //  Case 1: Base leg matches any otherTrip's leg
         const directMatch = otherLegs.some(otherLeg => isLegMatch(baseLeg, otherLeg));
 
-        // ✅ Case 2: Base leg matches otherTrip (direct)
+        //  Case 2: Base leg matches otherTrip (direct)
         const reverseMatch = isLegMatch(baseLeg, {
           from: otherTrip.from,
           to: otherTrip.to,
@@ -215,7 +232,7 @@ router.get('/discover/:tripId', protect, async (req, res) => {
           time: otherTrip.time
         });
 
-        // ✅ Case 3: Base trip (if direct) matches any leg of otherTrip
+        //  Case 3: Base trip (if direct) matches any leg of otherTrip
         const reverseLegMatch = baseTrip.hasConnections
           ? false
           : otherLegs.some(leg => isLegMatch(leg, {
@@ -231,21 +248,13 @@ router.get('/discover/:tripId', protect, async (req, res) => {
       }
     }
 
-    console.log("🎯 Final Matches by Leg:", results);
+    // console.log("🎯 Final Matches by Leg:", results);
     res.json(results);
   } catch (err) {
     console.error("❌ Discover Match Error:", err);
     res.status(500).json({ error: 'Server error' });
   }
 });
-
-
-
-
-
-
-
-
 
 
 export default router;
