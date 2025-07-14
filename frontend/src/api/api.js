@@ -125,5 +125,51 @@ export const deleteTrip = async (tripId) => {
 };
 
 
+// Send connection request
+export const sendConnectionRequest = async (tripId, matchedTripId) => {
+  try {
+    const res = await axios.post(
+      `http://localhost:8080/api/connections`,
+      { tripId, matchedTripId },
+      { headers: getAuthHeader() }
+    );
+    console.log("✅ [sendConnectionRequest] Sent:", res.data);
+    return res.data;
+  } catch (err) {
+    console.error("❌ [sendConnectionRequest] Error:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+// Fetch existing connection status
+export const getConnectionStatus = async () => {
+  try {
+    const res = await axios.get(`http://localhost:8080/api/connections/mine`, {
+      headers: getAuthHeader()
+    });
+    return res.data; // list of connections
+  } catch (err) {
+    console.error("❌ [getConnectionStatus] Error:", err.response?.data || err.message);
+    return [];
+  }
+};
+
+
+export const getAcceptedConnections = async () => {
+  try {
+    const res = await axios.get('http://localhost:8080/api/connections/accepted', {
+      headers: getAuthHeader()
+    });
+    console.log("👥 [getAcceptedConnections] Loaded", res.data.length);
+    return res.data;
+  } catch (err) {
+    console.error("❌ [getAcceptedConnections] error:", err.response?.data || err.message);
+    return [];
+  }
+};
+
+
+
+
 
 

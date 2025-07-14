@@ -4,7 +4,9 @@ import { useNavigate } from "react-router-dom";
 import {
   getMyTrips,
   discoverMatches,
-  deleteTrip
+  deleteTrip,
+  sendConnectionRequest,
+  getConnectionStatus
 } from "../api/api";
 import { motion } from "framer-motion";
 import { useRefresh } from "../context/RefreshContext.jsx";
@@ -22,6 +24,7 @@ import {
 export default function TravelPage() {
   const [trips, setTrips] = useState([]);
   const [matchResults, setMatchResults] = useState({});
+  const [connections, setConnections] = useState([]);
   const [loadingTripId, setLoadingTripId] = useState(null);
 
   const { triggerRefresh } = useRefresh();
@@ -31,16 +34,22 @@ export default function TravelPage() {
     const fetchTrips = async () => {
       try {
         const res = await getMyTrips();
-        const sorted = [...res].sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
+        const sorted = [...res].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setTrips(sorted);
       } catch (err) {
         console.error("❌ Failed to load trips:", err);
         toast.error("Failed to load trips.");
       }
     };
+
+    const fetchConnections = async () => {
+      const data = await getConnectionStatus();
+      console.log("📡 [TravelPage] Loaded connections:", data.length);
+      setConnections(data);
+    };
+
     fetchTrips();
+    fetchConnections();
   }, []);
 
   const handleFindMatches = async (tripId) => {
@@ -57,13 +66,8 @@ export default function TravelPage() {
   };
 
   const handleDeleteTrip = async (tripId) => {
-    if (!tripId) {
-      toast.error("Trip ID missing.");
-      return;
-    }
-
-    const confirm = window.confirm("Are you sure you want to delete this trip?");
-    if (!confirm) return;
+    if (!tripId) return toast.error("Trip ID missing.");
+    if (!window.confirm("Are you sure you want to delete this trip?")) return;
 
     try {
       const res = await deleteTrip(tripId);
@@ -84,6 +88,26 @@ export default function TravelPage() {
     }
   };
 
+  const getConnectionState = (myTripId, theirTripId) => {
+  const match = connections.find(c =>
+    (c.tripId === myTripId && c.matchedTripId === theirTripId) ||
+    (c.tripId === theirTripId && c.matchedTripId === myTripId)
+  );
+  return match?.status || "none";
+};
+
+
+  const handleSendConnection = async (myTripId, theirTripId) => {
+    try {
+      await sendConnectionRequest(myTripId, theirTripId);
+      toast.success("Request sent!");
+      const updated = await getConnectionStatus();
+      setConnections(updated);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to send request");
+    }
+  };
+
   return (
     <div className="p-6 space-y-8 bg-[#F5F7FA] min-h-screen">
       {/* Header and Add Trip Button */}
@@ -101,18 +125,10 @@ export default function TravelPage() {
       </div>
 
       {/* Trips */}
-      {Array.isArray(trips) && trips.length > 0 ? (
+      {trips.length > 0 ? (
         trips.map((trip) => {
           const matches = matchResults[trip._id] || {};
-          const {
-            from,
-            to,
-            date,
-            genderPreference,
-            status,
-            hasConnections,
-            legs
-          } = trip;
+          const { from, to, date, genderPreference, status, hasConnections, legs } = trip;
           const matchesFetched = trip._id in matchResults;
 
           return (
@@ -152,13 +168,8 @@ export default function TravelPage() {
                       <Route className="w-4 h-4" /> Connected Legs
                     </p>
                     {legs.map((leg, i) => (
-                      <div
-                        key={i}
-                        className="pl-3 border-l-2 border-dashed border-gray-300 ml-1"
-                      >
-                        <p className="font-medium">
-                          {leg.from} → {leg.to}
-                        </p>
+                      <div key={i} className="pl-3 border-l-2 border-dashed border-gray-300 ml-1">
+                        <p className="font-medium">{leg.from} → {leg.to}</p>
                         <p className="text-xs text-gray-500">
                           {new Date(leg.date).toDateString()} @ {leg.time}
                         </p>
@@ -191,28 +202,46 @@ export default function TravelPage() {
               {/* Match Results */}
               {matchesFetched && (
                 <div className="border-t border-gray-200 pt-6 space-y-6">
-                  {Object.entries(matches).map(([key, trips]) => (
+                  {Object.entries(matches).map(([key, matchedTrips]) => (
                     <div key={key}>
                       <h3 className="text-md font-semibold text-[#4A90E2] flex items-center gap-2 mb-3">
-                        <Route className="w-5 h-5" /> Matches for{" "}
-                        {hasConnections ? `Leg: ${key}` : `Trip: ${key}`}
+                        <Route className="w-5 h-5" /> Matches for {hasConnections ? `Leg: ${key}` : `Trip: ${key}`}
                       </h3>
 
-                      {trips.length > 0 ? (
+                      {matchedTrips.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                          {trips.map((t) => (
-                            <div
-                              key={t._id}
-                              className="bg-white border p-4 rounded-xl shadow-sm text-sm hover:shadow-md transition"
-                            >
-                              <p className="font-semibold text-[#2D2D2D]">{t.user.name}</p>
-                              <p className="text-gray-600">From: {t.from}</p>
-                              <p className="text-gray-600">To: {t.to}</p>
-                              <p className="text-gray-600">Date: {new Date(t.date).toDateString()}</p>
-                              <p className="text-gray-600">Time: {t.time}</p>
-                              <p className="text-gray-600">Gender: {t.user.declaredGender}</p>
-                            </div>
-                          ))}
+                          {matchedTrips.map((t) => {
+                            const state = getConnectionState(trip._id, t._id);
+
+                            return (
+                              <div
+                                key={t._id}
+                                className="bg-white border p-4 rounded-xl shadow-sm text-sm hover:shadow-md transition"
+                              >
+                                <p className="font-semibold text-[#2D2D2D]">{t.user.name}</p>
+                                <p className="text-gray-600">From: {t.from}</p>
+                                <p className="text-gray-600">To: {t.to}</p>
+                                <p className="text-gray-600">Date: {new Date(t.date).toDateString()}</p>
+                                <p className="text-gray-600">Time: {t.time}</p>
+                                <p className="text-gray-600">Gender: {t.user.declaredGender}</p>
+
+                                {state === 'none' && (
+                                  <button
+                                    onClick={() => handleSendConnection(trip._id, t._id)}
+                                    className="mt-2 text-[#4A90E2] hover:underline"
+                                  >
+                                    Connect
+                                  </button>
+                                )}
+                                {state === 'pending' && (
+                                  <p className="mt-2 text-yellow-600 text-sm">Requested...</p>
+                                )}
+                                {state === 'accepted' && (
+                                  <p className="mt-2 text-green-600 text-sm">Connected ✅</p>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       ) : (
                         <p className="text-sm italic text-gray-500 pl-1">

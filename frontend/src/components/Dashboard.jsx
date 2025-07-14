@@ -10,6 +10,8 @@ import { Link } from "react-router-dom";
 import { getMyTrips } from "../api/api";
 import { CalendarDays, Clock, PlusCircle } from "lucide-react";
 import { useRefresh } from "../context/RefreshContext.jsx";
+import { getAcceptedConnections } from "../api/api.js";
+
 
 
 export default function Dashboard() {
@@ -20,6 +22,8 @@ export default function Dashboard() {
   const [markedDates, setMarkedDates] = useState([]);
   const user = JSON.parse(localStorage.getItem("user-info"));
   const sidebarWidth = collapsed ? 72 : 240;
+  const [companions, setCompanions] = useState([]);
+
 
   const { refreshFlag } = useRefresh();
 
@@ -59,7 +63,16 @@ useEffect(() => {
   };
 
   fetchTrips();
-}, [refreshFlag]); // 👈 reacts to changes
+
+  const fetchConnections = async () => {
+  const data = await getAcceptedConnections();
+  console.log("👥 Dashboard: accepted connections", data.length);
+  setCompanions(data);
+};
+fetchConnections();
+
+
+}, [refreshFlag]); 
 
 
   const countStatus = (status) => trips.filter((t) => t.status === status).length;
@@ -231,6 +244,44 @@ const tileContent = ({ date, view }) => {
     </ul>
   )}
 </section>
+
+{/* Connected Companions */}
+<section className="bg-white rounded-2xl shadow-lg p-6">
+  <h3 className="text-xl font-semibold text-[#2D2D2D] mb-4">Connected Companions</h3>
+
+  {companions.length === 0 ? (
+    <p className="text-sm italic text-gray-500">You have no accepted companions yet.</p>
+  ) : (
+    <ul className="space-y-4">
+      {companions.map((conn) => {
+        const isMeSender = conn.fromUser._id === user._id;
+        const otherUser = isMeSender ? conn.toUser : conn.fromUser;
+        const otherTrip = isMeSender ? conn.matchedTripId : conn.tripId;
+
+        return (
+          <li
+            key={conn._id}
+            className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-50 border rounded-xl p-4"
+          >
+            <div className="text-sm space-y-1">
+              <p className="font-semibold text-[#2D2D2D]">
+                {otherUser.name} ({otherUser.declaredGender})
+              </p>
+              <p className="text-gray-600">Trip: {otherTrip.from} → {otherTrip.to}</p>
+              <p className="text-gray-600">
+                Date: {new Date(otherTrip.date).toDateString()} @ {otherTrip.time}
+              </p>
+            </div>
+            <span className="mt-2 sm:mt-0 px-3 py-1 text-xs rounded-full bg-green-100 text-green-600">
+              Connected
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  )}
+</section>
+
 
         </div>
 

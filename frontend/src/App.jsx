@@ -20,6 +20,7 @@ import VerifyFailed from "./pages/VerifyFailed";
 import PageNotFound from "./components/PageNotFound";
 import TravelPage from "./pages/TravelPage";
 import AddTripPage from "./pages/AddTripPage";
+import Notifications from "./pages/Notifications";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -79,6 +80,17 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route
+  path="/notifications"
+  element={
+    <ProtectedRoute>
+      <MainLayout>
+        <Notifications />
+      </MainLayout>
+    </ProtectedRoute>
+  }
+/>
 
           <Route
   path="/travel"
