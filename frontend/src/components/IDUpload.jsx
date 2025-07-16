@@ -15,13 +15,14 @@ const IDUpload = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [isDesktop, setIsDesktop] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [consentGiven, setConsentGiven] = useState(false);
+  const [showFAQ, setShowFAQ] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   const frontRef = useRef();
   const backRef = useRef();
   const [frontFileName, setFrontFileName] = useState("");
   const [backFileName, setBackFileName] = useState("");
-  const [showFAQ, setShowFAQ] = useState(false);
-
   const navigate = useNavigate();
   const sidebarWidth = collapsed ? 72 : 240;
 
@@ -46,6 +47,9 @@ const IDUpload = () => {
 
     if (!frontFile || !backFile)
       return toast.error("Please upload both sides of ID card");
+
+    if (!consentGiven)
+      return toast.error("You must give consent to continue");
 
     if (!userId || userId.length !== 24)
       return toast.error("Invalid user ID. Please log in again.");
@@ -101,25 +105,24 @@ const IDUpload = () => {
             {/* Trust + Instructions */}
             <div className="bg-blue-50 border border-blue-200 text-blue-800 text-sm p-4 rounded-md mb-6 space-y-3">
               <div className="flex items-start gap-2">
-                <ShieldCheck className="w-5 h-5 mt-0.5" />
-                <p>
-                  Your ID is used only for verifying your <strong>gender</strong> and <strong>branch</strong>.
-                  It is processed securely and never shared publicly.
-                </p>
-              </div>
+  <ShieldCheck className="w-5 h-5 mt-0.5" />
+  <p>
+    Your ID is used only for verifying your <strong>gender</strong> and <strong>branch</strong>. We <strong>do not store your ID image</strong> or any personal data beyond this.
+  </p>
+</div>
 
               <div className="flex items-start gap-2">
                 <Info className="w-5 h-5 mt-0.5 text-blue-700" />
                 <p>
-                  Please upload <strong>clear, well-lit image files</strong>. Blurry or dark photos may be rejected.
-                  Only <strong>image files (JPG, PNG)</strong> are accepted.
+                  Upload <strong>clear, well-lit image files</strong> only. Blurry or dark images will be rejected.
+                  Accepted formats: <strong>JPG, PNG</strong>. Camera upload is supported on mobile.
                 </p>
               </div>
 
               <div className="flex items-start gap-2">
                 <HelpCircle className="w-5 h-5 mt-0.5 text-blue-700" />
                 <p>
-                  If you have any doubts or need clarification, feel free to contact the owner or developer of this website.
+                  If you have any doubts or need clarification, feel free to contact the developer of this website.
                 </p>
               </div>
             </div>
@@ -129,14 +132,6 @@ const IDUpload = () => {
               <div>
                 <label className="flex items-center text-sm font-medium text-[#2D2D2D] mb-1">
                   Front Side
-                  <button
-                    onClick={() => setShowFAQ(true)}
-                    type="button"
-                    className="ml-1 text-blue-500 hover:text-blue-700"
-                    title="Why is ID required?"
-                  >
-                    <Info className="w-4 h-4" />
-                  </button>
                 </label>
                 <input
                   ref={frontRef}
@@ -167,6 +162,28 @@ const IDUpload = () => {
                 )}
               </div>
 
+              {/* Consent */}
+              <div className="space-y-2">
+                <label className="flex items-start gap-2 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={consentGiven}
+                    onChange={(e) => setConsentGiven(e.target.checked)}
+                    className="mt-1"
+                  />
+                  <span>
+                    I consent to share my <strong>college branch</strong> and <strong>email</strong> with users I’m matched with for a trip.{" "}
+                    <button
+                      type="button"
+                      className="text-blue-600 underline"
+                      onClick={() => setShowTerms(true)}
+                    >
+                      View Terms & Conditions
+                    </button>
+                  </span>
+                </label>
+              </div>
+
               <button
                 onClick={handleUpload}
                 disabled={uploading}
@@ -183,25 +200,31 @@ const IDUpload = () => {
           </div>
         </div>
 
-        {/* FAQ Modal */}
-        <Dialog open={showFAQ} onClose={() => setShowFAQ(false)} className="relative z-50">
+        {/* Terms & Conditions Modal */}
+        <Dialog open={showTerms} onClose={() => setShowTerms(false)} className="relative z-50">
           <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           <div className="fixed inset-0 flex items-center justify-center p-4">
-            <Dialog.Panel className="bg-white max-w-md w-full rounded-xl shadow-xl p-6 space-y-4">
+            <Dialog.Panel className="bg-white max-w-lg w-full rounded-xl shadow-xl p-6 space-y-4">
               <Dialog.Title className="text-lg font-semibold text-[#2D2D2D]">
-                Why Do We Ask for Your ID?
+                Terms & Conditions
               </Dialog.Title>
-              <ul className="text-sm text-gray-700 space-y-2 list-disc list-inside">
-                <li>To verify you're a real student from a verified college.</li>
-                <li>We extract only your gender and branch — not name, photo, or anything else.</li>
-                <li>Your ID is securely processed and never shared publicly.</li>
+              <ul className="text-sm text-gray-700 list-disc list-inside space-y-2">
+                <li>Your college ID is processed securely to extract only your gender and branch.</li>
+                <li>We do <strong>not store your college ID image</strong> or any personal data other than your verified gender and branch.</li>
+                <li>Only your <strong>branch</strong> and <strong>email</strong> may be visible to other users you’re matched with for verified travel coordination.</li>
+                <li>We do not display your photo, full ID, or phone number to any user.</li>
+                <li>You are matched only with verified users from NIT Jamshedpur.</li>
+                <li>You can contact us any time for removal, correction, or data requests.</li>
               </ul>
+              <p className="text-xs text-gray-500 mt-3">
+                By using this service, you agree to these terms and confirm you are a college student uploading your own ID.
+              </p>
               <div className="flex justify-end">
                 <button
-                  onClick={() => setShowFAQ(false)}
-                  className="text-sm text-blue-600 hover:text-blue-800 mt-4"
+                  onClick={() => setShowTerms(false)}
+                  className="text-sm text-blue-600 hover:text-blue-800"
                 >
-                  Got it, thanks!
+                  Close
                 </button>
               </div>
             </Dialog.Panel>
