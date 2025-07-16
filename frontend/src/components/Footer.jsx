@@ -50,7 +50,7 @@ export default function Footer() {
           <h4 className="text-lg font-semibold mb-3">Connect</h4>
           <div className="flex space-x-4 mt-2">
             <a
-              href="https://github.com/your-github"
+              href="https://github.com/rajarnav0906"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="GitHub"
@@ -62,7 +62,7 @@ export default function Footer() {
               </svg>
             </a>
             <a
-              href="https://linkedin.com/in/your-linkedin"
+              href="https://www.linkedin.com/in/arnav-raj-04211a216/"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="LinkedIn"
@@ -74,7 +74,7 @@ export default function Footer() {
               </svg>
             </a>
             <a
-              href="https://instagram.com/your-instagram"
+              href="https://www.instagram.com/arnav_0906"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Instagram"
@@ -86,7 +86,7 @@ export default function Footer() {
               </svg>
             </a>
             <a
-              href="mailto:support@nextseat.in"
+              href="mailto:2022ugpi009@nitjsr.ac.in"
               aria-label="Email"
             >
               <svg className="w-6 h-6 text-[#2D2D2D] hover:text-[#4A90E2]" fill="currentColor" viewBox="0 0 24 24">
@@ -98,9 +98,18 @@ export default function Footer() {
       </div>
 
       {/* Footer Bottom */}
-      <div className="mt-12 text-center text-sm text-gray-500">
-        Made with ❤️ by <span className="font-medium text-[#4A90E2]">Arnav Raj</span> — © 2025 nextSeat
-      </div>
+      {/* Footer Bottom */}
+{/* Footer Bottom */}
+<div className="mt-12 text-center text-sm text-gray-500 space-y-1">
+  <p>
+    Made with ❤️ by <span className="font-medium text-[#4A90E2]">Arnav Raj</span> — © 2025 nextSeat
+  </p>
+  <p className="text-xs">
+    All rights reserved. All platform features, designs, workflows, and materials are the intellectual property of nextSeat and its creators. Unauthorized reproduction or use is prohibited.
+  </p>
+</div>
+
+
     </footer>
   );
 }
