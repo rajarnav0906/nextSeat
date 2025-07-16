@@ -22,7 +22,7 @@ const extractDetails = async (buffer, mimetype) => {
   const lower = text.toLowerCase();
 
   const genderMatch = lower.match(/gender\s*[:\-]?\s*(male|female)/i);
-  const branchMatch = lower.match(/department\s*[:\-]?\s*(Production and Industrial Engineering|Electrical Engineering|Civil Engineering|Mechanical Engineering|Computer Science Engineering|Electronics and Communication Engineering|Electronics and Computational Mechanics)/i);
+  const branchMatch = lower.match(/department\s*[:\-]?\s*(Production and Industrial Engineering|Electrical Engineering|Civil Engineering|Mechanical Engineering|Computer Science and Engineering|Electronics and Communication Engineering|Electronics and Computational Mechanics|Chemistry|Humanities, Social Sciences and Management|Mathematics|Metallurgical and Materials Engineering|Physics)/i);
 
   const gender = genderMatch ? genderMatch[1].toLowerCase() : undefined;
   const branch = branchMatch ? branchMatch[1].toUpperCase() : undefined;

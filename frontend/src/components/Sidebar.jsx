@@ -65,14 +65,15 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, setMobileOpen
 
           {/* Collapse Button */}
           <div className="flex justify-center mt-4">
-            <button onClick={onToggle} className="text-[#4A90E2] hover:text-[#3A7AD9] transition">
+            <button onClick={onToggle} className="text-[#4A90E2] hover:text-[#3A7AD9] transition cursor-pointer">
+
               <motion.svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                animate={{ rotate: collapsed ? 180 : 0 }}
+                animate={{ rotate: collapsed ? 0 : 180 }}
                 transition={{ duration: 0.3 }}
               >
                 <path
@@ -220,11 +221,13 @@ function SidebarItem({ to, icon, label, collapsed, active, onClick, redOutline }
   );
 
   return to ? (
-    <Link to={to} onClick={onClick} className={className}>
+    <Link to={to} onClick={onClick} className={className + " cursor-pointer"}>
+
       {content}
     </Link>
   ) : (
-    <button onClick={onClick} className={className + " w-full text-left"}>
+    <button onClick={onClick} className={className + " w-full text-left cursor-pointer"}>
+
       {content}
     </button>
   );

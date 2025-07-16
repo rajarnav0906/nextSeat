@@ -6,6 +6,10 @@ import Footer from "../components/Footer";
 import logo from "../images/logo2.png";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import TestimonialsSection from "../components/TestimonialsSection";
+import TestimonialForm from "../components/TestimonialForm";
+import FeedbackReminder from "../components/FeedbackReminder";
+
 
 
 const fade = {
@@ -203,7 +207,11 @@ const handleExploreClick = () => {
     />
   </div>
 </section> */}
-
+<TestimonialsSection />
+<section id="testimonial-form">
+  <TestimonialForm />
+</section>
+<FeedbackReminder />
         <Footer />
       </main>
     </div>

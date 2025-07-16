@@ -21,6 +21,8 @@ import PageNotFound from "./components/PageNotFound";
 import TravelPage from "./pages/TravelPage";
 import AddTripPage from "./pages/AddTripPage";
 import Notifications from "./pages/Notifications";
+import Chat from "./pages/Chat";
+import TicketExchange from "./pages/TicketExchange";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -64,14 +66,25 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
-  path="/add-trip"
-  element={
-    <MainLayout>
-      <AddTripPage />
-    </MainLayout>
-  }
-/>
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Chat/>
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/add-trip"
+            element={
+              <MainLayout>
+                <AddTripPage />
+              </MainLayout>
+            }
+          />
           <Route
             path="/upload-id"
             element={
@@ -82,30 +95,35 @@ function App() {
           />
 
           <Route
-  path="/notifications"
-  element={
-    <ProtectedRoute>
-      <MainLayout>
-        <Notifications />
-      </MainLayout>
-    </ProtectedRoute>
-  }
-/>
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Notifications />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
 
           <Route
-  path="/travel"
-  element={
-    <MainLayout>
-      <TravelPage />
-    </MainLayout>
-  }
-/>
+            path="/travel"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <TravelPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/tickets"
             element={
-              <MainLayout>
-                <div>Tickets Page Coming Soon</div>
-              </MainLayout>
+              <ProtectedRoute>
+                <MainLayout>
+                  <TicketExchange />
+                </MainLayout>
+              </ProtectedRoute>
             }
           />
 

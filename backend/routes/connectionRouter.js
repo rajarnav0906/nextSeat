@@ -129,7 +129,15 @@ router.put('/:id', protect, async (req, res) => {
     }
 
     connection.status = status;
-    await connection.save();
+await connection.save();
+
+//  Mark both trips as active if accepted
+if (status === 'accepted') {
+  await Trip.updateOne({ _id: connection.tripId }, { status: 'active' });
+  await Trip.updateOne({ _id: connection.matchedTripId }, { status: 'active' });
+  console.log(`🟢 Marked trips ${connection.tripId} and ${connection.matchedTripId} as active`);
+}
+
 
     console.log(`✅ Connection ${status}:`, connection._id);
     res.json({ message: `Connection ${status}` });
@@ -155,16 +163,25 @@ router.get('/accepted', protect, async (req, res) => {
     })
       .populate('tripId')
       .populate('matchedTripId')
-      .populate('fromUser', 'name declaredGender')
-      .populate('toUser', 'name declaredGender');
+      .populate('fromUser', 'name declaredGender email branch')
+      .populate('toUser', 'name declaredGender email branch');
 
-    console.log(`✅ [GET /connections/accepted] ${connections.length} found for ${req.user._id}`);
-    res.json(connections);
+    //  Filter out connections with missing user
+    const validConnections = connections.filter(conn => conn.fromUser && conn.toUser);
+    const skipped = connections.length - validConnections.length;
+
+    if (skipped > 0) {
+      console.warn(`⚠️ Skipped ${skipped} broken connections for user ${req.user._id}`);
+    }
+
+    console.log(`✅ [GET /connections/accepted] ${validConnections.length} found for ${req.user._id}`);
+    res.json(validConnections);
   } catch (err) {
     console.error("❌ Error fetching accepted companions:", err.message);
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 
 

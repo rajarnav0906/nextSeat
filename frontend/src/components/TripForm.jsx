@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import tripImage from "../../src/images/trip_add.png";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 export default function TripForm() {
   const [from, setFrom] = useState("");
@@ -23,6 +24,8 @@ export default function TripForm() {
   const [genderPreference, setGenderPreference] = useState("any");
   const [hasConnections, setHasConnections] = useState(false);
   const [legs, setLegs] = useState([]);
+  const navigate = useNavigate();
+
 
   const addLeg = () => {
     setLegs([...legs, { from: "", to: "", date: "", time: "" }]);
@@ -66,6 +69,7 @@ export default function TripForm() {
       toast.success("Trip created!");
       setFrom(""); setTo(""); setDate(""); setTime("");
       setLegs([]); setHasConnections(false);
+      navigate("/travel");
     } catch (err) {
       toast.error("Trip creation failed.");
     }

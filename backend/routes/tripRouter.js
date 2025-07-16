@@ -1,6 +1,7 @@
 import express from 'express';
 import Trip from '../models/Trip.js';
 import { protect } from '../middlewares/authMiddleware.js';
+import Connection from '../models/Connection.js';
 
 const router = express.Router();
 
@@ -189,22 +190,34 @@ router.get('/discover/:tripId', protect, async (req, res) => {
       isTimeClose(legA.time, legB.time);
 
     const mutualGender = (tripA, tripB) => {
-      const genderA = (tripA.user.declaredGender || '').toLowerCase();
-      const genderB = (tripB.user.declaredGender || '').toLowerCase();
+  if (!tripA?.user || !tripB?.user) {
+    console.warn("⚠️ Skipping gender check: user missing", {
+      tripAUser: tripA?.user,
+      tripBUser: tripB?.user,
+    });
+    return false;
+  }
 
-      const prefA = (tripA.genderPreference || 'any').toLowerCase();
-      const prefB = (tripB.genderPreference || 'any').toLowerCase();
+  const genderA = (tripA.user.declaredGender || '').toLowerCase();
+  const genderB = (tripB.user.declaredGender || '').toLowerCase();
 
-      const aAllowsB = prefA === 'any' ||
-        (prefA === 'only males' && genderB === 'male') ||
-        (prefA === 'only females' && genderB === 'female');
+  const prefA = (tripA.genderPreference || 'any').toLowerCase();
+  const prefB = (tripB.genderPreference || 'any').toLowerCase();
 
-      const bAllowsA = prefB === 'any' ||
-        (prefB === 'only males' && genderA === 'male') ||
-        (prefB === 'only females' && genderA === 'female');
+  const aAllowsB = prefA === 'any' ||
+    (prefA === 'only males' && genderB === 'male') ||
+    (prefA === 'only females' && genderB === 'female');
 
-      return aAllowsB && bAllowsA;
-    };
+  const bAllowsA = prefB === 'any' ||
+    (prefB === 'only males' && genderA === 'male') ||
+    (prefB === 'only females' && genderA === 'female');
+
+  const isMatch = aAllowsB && bAllowsA;
+
+  console.log(`🧬 Gender Match: A [${genderA}] prefers [${prefA}] ⇄ B [${genderB}] prefers [${prefB}] => ${isMatch}`);
+  return isMatch;
+};
+
 
     const results = {};
     const baseLegs = toLegArray(baseTrip);
@@ -255,6 +268,75 @@ router.get('/discover/:tripId', protect, async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+
+
+
+router.patch('/update-statuses', protect, async (req, res) => {
+  try {
+    const now = new Date();
+    console.log("🚀 [Trip Status] Starting status update @", now.toISOString());
+
+    const connections = await Connection.find({ status: 'accepted' })
+      .populate('tripId')
+      .populate('matchedTripId');
+
+    console.log(`🔍 Checking ${connections.length} accepted connections`);
+
+    for (const conn of connections) {
+      const tripA = conn.tripId;
+      const tripB = conn.matchedTripId;
+
+      const lastDateTimeA = getLatestDateTime(tripA);
+      const lastDateTimeB = getLatestDateTime(tripB);
+
+      const latest = new Date(Math.max(lastDateTimeA.getTime(), lastDateTimeB.getTime()));
+      const bufferMs = 30 * 60 * 1000; // 30-minute buffer
+      const latestWithBuffer = new Date(latest.getTime() + bufferMs);
+
+      if (now > latestWithBuffer) {
+        // Past buffered time → mark as completed
+        await Trip.updateOne({ _id: tripA._id }, { status: 'completed' });
+        await Trip.updateOne({ _id: tripB._id }, { status: 'completed' });
+        await Connection.updateOne({ _id: conn._id }, { status: 'completed' });
+
+        console.log(`✅ [COMPLETED] Trips ${tripA._id} & ${tripB._id} via connection ${conn._id} (after buffer)`);
+      } else {
+        // Still upcoming within buffer → active
+        await Trip.updateOne({ _id: tripA._id }, { status: 'active' });
+        await Trip.updateOne({ _id: tripB._id }, { status: 'active' });
+
+        console.log(`🟢 [ACTIVE] Trips ${tripA._id} & ${tripB._id} still within buffer window`);
+      }
+    }
+
+    res.json({ message: 'Trip statuses updated' });
+  } catch (err) {
+    console.error("❌ Error in /update-statuses:", err.message);
+    res.status(500).json({ message: 'Status update failed' });
+  }
+});
+
+// ⏱ Helper to get the latest datetime from trip's main date/time and all legs
+function getLatestDateTime(trip) {
+  const times = [];
+
+  if (trip.date && trip.time) {
+    times.push(new Date(`${trip.date.toISOString().split('T')[0]}T${trip.time}`));
+  }
+
+  if (Array.isArray(trip.legs)) {
+    for (const leg of trip.legs) {
+      if (leg.date && leg.time) {
+        times.push(new Date(`${leg.date.toISOString().split('T')[0]}T${leg.time}`));
+      }
+    }
+  }
+
+  return times.length > 0 ? new Date(Math.max(...times.map(t => t.getTime()))) : new Date(0);
+}
+
+
 
 
 export default router;

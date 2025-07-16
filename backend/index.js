@@ -7,6 +7,7 @@ import connectDB from './connections/db.js';
 import authRouter from './routes/authRouter.js';
 import tripRouter from './routes/tripRouter.js';
 import connectionRouter from './routes/connectionRouter.js';
+import testimonialRouter from './routes/testimonialRouter.js';
 
 
 const app = express();
@@ -35,6 +36,9 @@ app.use('/api/trips', tripRouter);
 
 // connection req route
 app.use('/api/connections', connectionRouter);
+
+// testimonials
+app.use('/api/testimonials', testimonialRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

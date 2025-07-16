@@ -1,7 +1,10 @@
+import { Link } from "react-router-dom";
+
 export default function Footer() {
   return (
     <footer className="bg-[#F5F7FA] text-[#2D2D2D] px-6 md:px-20 py-16 mt-12 border-t border-gray-200">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12">
+
         {/* Brand Info */}
         <div>
           <h3 className="text-2xl font-bold mb-2 text-[#4A90E2]">nextSeat</h3>
@@ -10,21 +13,42 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* Navigation */}
+        {/* Useful Internal Links */}
         <div>
-          <h4 className="text-lg font-semibold mb-3">Quick Links</h4>
+          <h4 className="text-lg font-semibold mb-3">Explore</h4>
           <ul className="space-y-2 text-sm">
-            <li><a href="#features" className="hover:text-[#4A90E2] transition">Features</a></li>
-            <li><a href="#how-it-works" className="hover:text-[#4A90E2] transition">How It Works</a></li>
-            <li><a href="#stats" className="hover:text-[#4A90E2] transition">Platform Stats</a></li>
+            <li>
+              <Link to="/" className="hover:text-[#4A90E2] transition" onClick={() => window.scrollTo(0, 0)}>
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link to="/dashboard" className="hover:text-[#4A90E2] transition" onClick={() => window.scrollTo(0, 0)}>
+                Dashboard
+              </Link>
+            </li>
+            <li>
+              <Link to="/travel" className="hover:text-[#4A90E2] transition" onClick={() => window.scrollTo(0, 0)}>
+                Travel Together
+              </Link>
+            </li>
+            <li>
+              <Link to="/notifications" className="hover:text-[#4A90E2] transition" onClick={() => window.scrollTo(0, 0)}>
+                Notifications
+              </Link>
+            </li>
+            {/* <li>
+              <Link to="/profile" className="hover:text-[#4A90E2] transition">
+                Profile
+              </Link>
+            </li> */}
           </ul>
         </div>
 
-        {/* Contact & Socials */}
+        {/* Social & Contact Links */}
         <div>
           <h4 className="text-lg font-semibold mb-3">Connect</h4>
           <div className="flex space-x-4 mt-2">
-            {/* GitHub */}
             <a
               href="https://github.com/your-github"
               target="_blank"
@@ -37,8 +61,6 @@ export default function Footer() {
                 />
               </svg>
             </a>
-
-            {/* LinkedIn */}
             <a
               href="https://linkedin.com/in/your-linkedin"
               target="_blank"
@@ -51,8 +73,6 @@ export default function Footer() {
                 />
               </svg>
             </a>
-
-            {/* Instagram */}
             <a
               href="https://instagram.com/your-instagram"
               target="_blank"
@@ -65,9 +85,10 @@ export default function Footer() {
                 />
               </svg>
             </a>
-
-            {/* Email */}
-            <a href="mailto:support@travelmate.in" aria-label="Email">
+            <a
+              href="mailto:support@nextseat.in"
+              aria-label="Email"
+            >
               <svg className="w-6 h-6 text-[#2D2D2D] hover:text-[#4A90E2]" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M4 4h16c1.11 0 2 .9 2 2v12c0 1.1-.89 2-2 2H4c-1.11 0-2-.9-2-2V6c0-1.1.89-2 2-2zm8 7L4.5 6h15L12 11zm0 2.25L4.5 8v10h15V8L12 13.25z" />
               </svg>
@@ -76,9 +97,12 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* Footer Bottom */}
       <div className="mt-12 text-center text-sm text-gray-500">
         Made with ❤️ by <span className="font-medium text-[#4A90E2]">Arnav Raj</span> — © 2025 nextSeat
       </div>
     </footer>
   );
 }
+
+

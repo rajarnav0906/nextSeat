@@ -171,5 +171,43 @@ export const getAcceptedConnections = async () => {
 
 
 
+// Add this function
+export const getTestimonials = async () => {
+  try {
+    const res = await axios.get("/api/testimonials");
+    console.log("✅ Testimonials fetched:", res.data);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Error fetching testimonials:", err.message);
+    throw err;
+  }
+};
+
+
+export const postTestimonial = async (data) => {
+  try {
+    const res = await axios.post('/api/testimonials', data);
+    console.log('✅ Testimonial submitted:', res.data);
+    return res.data;
+  } catch (err) {
+    console.error('❌ Error submitting testimonial:', err.message);
+    throw err;
+  }
+};
+
+
+
+export const hasUserSubmitted = async (userId) => {
+  const res = await axios.get(`/api/testimonials/user/${userId}`);
+  return res.data.submitted; // true or false
+};
+
+
+
+
+
+
+
+
 
 
