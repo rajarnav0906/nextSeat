@@ -18,7 +18,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import FeedbackReminder from "../components/FeedbackReminder.jsx";
-
+import Chat from '../pages/Chat.jsx';
 import { useRefresh } from "../context/RefreshContext.jsx";
 
 export default function Dashboard() {
@@ -29,12 +29,8 @@ export default function Dashboard() {
   const [markedDates, setMarkedDates] = useState([]);
   const [companions, setCompanions] = useState([]);
   const [hovered, setHovered] = useState(null);
-
-  // const hasSubmitted = await hasUserSubmitted(user._id);
-
-  // const [selectedDay, setSelectedDay] = useState(today);
-
-  // const [showUpcomingOnly, setShowUpcomingOnly] = useState(true);
+  const [chatVisibleFor, setChatVisibleFor] = useState(null);
+  
 
   const user = JSON.parse(localStorage.getItem("user-info"));
   const sidebarWidth = collapsed ? 72 : 240;
@@ -217,7 +213,6 @@ export default function Dashboard() {
             </Link>
           </section> */}
 
-
           {/* Connected Companions */}
           <section className="bg-white rounded-2xl shadow-lg p-6">
             <h3 className="text-xl font-semibold text-[#2D2D2D] mb-4">
@@ -234,93 +229,112 @@ export default function Dashboard() {
                 </p>
                 <ul className="space-y-4">
                   {companions
-                  .filter((conn) => conn.fromUser && conn.toUser)
-                  .map((conn) => {
-                    const isMeSender = conn.fromUser._id === user._id;
-                    const otherUser = isMeSender ? conn.toUser : conn.fromUser;
-                    const otherTrip = isMeSender
-                      ? conn.matchedTripId
-                      : conn.tripId;
-                    if (!otherTrip) return null;
+                    .filter((conn) => conn.fromUser && conn.toUser)
+                    .map((conn) => {
+                      const isMeSender = conn.fromUser._id === user._id;
+                      const otherUser = isMeSender
+                        ? conn.toUser
+                        : conn.fromUser;
+                      const otherTrip = isMeSender
+                        ? conn.matchedTripId
+                        : conn.tripId;
+                      if (!otherTrip) return null;
 
-                    const isHovered = hovered === conn._id;
+                      const isHovered = hovered === conn._id;
+                      const isTripActive = conn.tripId?.status !== 'completed' && conn.matchedTripId?.status !== 'completed';
 
-                    return (
-                      <li
-                        key={conn._id}
-                        onMouseEnter={() => setHovered(conn._id)}
-                        onMouseLeave={() => setHovered(null)}
-                        className="relative flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-50 border rounded-xl p-4 hover:shadow-md transition cursor-pointer"
-                      >
-                        <div className="text-sm space-y-1 relative">
-                          <div className="font-semibold text-[#2D2D2D]">
-                            {otherUser.name} ({otherUser.declaredGender})
+
+                      return (
+                        <li
+                          key={conn._id}
+                          onMouseEnter={() => setHovered(conn._id)}
+                          onMouseLeave={() => setHovered(null)}
+                          className="relative flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-50 border rounded-xl p-4 hover:shadow-md transition cursor-pointer"
+                        >
+                          <div className="text-sm space-y-1 relative w-full">
+                            <div className="font-semibold text-[#2D2D2D]">
+                              {otherUser.name} ({otherUser.declaredGender})
+                            </div>
+
+                            {isHovered && (
+                              <div className="absolute top-full left-0 mt-3 w-80 bg-white/90 backdrop-blur-md border border-gray-200 rounded-xl shadow-xl p-5 z-20 transition-all space-y-4">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-12 h-12 rounded-full bg-[#e0e7ff] flex items-center justify-center text-[#4A90E2] shadow">
+                                    <User className="w-6 h-6" />
+                                  </div>
+                                  <div className="flex flex-col text-sm text-[#2D2D2D]">
+                                    <div className="flex items-center gap-2 font-semibold">
+                                      <User className="w-4 h-4" />
+                                      <span>{otherUser.name}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-gray-600 text-sm">
+                                      <Mail className="w-4 h-4" />
+                                      <span>{otherUser.email}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-gray-600 text-sm">
+                                      <User className="w-4 h-4" />
+                                      <span>
+                                        Branch:{" "}
+                                        {formatBranch(otherUser.branch) ||
+                                          "N/A"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <p className="text-xs text-gray-500">
+                                  You can coordinate further using the options
+                                  below.
+                                </p>
+
+                                <div className="flex justify-between gap-3">
+                                  <a
+                                    href={`mailto:${otherUser.email}`}
+                                    className="inline-flex items-center gap-2 text-sm bg-[#4A90E2] text-white px-4 py-2 rounded hover:bg-[#3A7AD9] transition cursor-pointer"
+                                  >
+                                    <Send className="w-4 h-4" />
+                                    Send Mail
+                                  </a>
+                                  <Link
+  to={`/chat/${conn._id}`}
+  className="inline-flex items-center gap-2 text-sm bg-[#50C878] text-white px-4 py-2 rounded hover:bg-[#3DB56B] transition cursor-pointer"
+>
+  <MessageCircle className="w-4 h-4" />
+  Chat
+</Link>
+
+                                </div>
+                              </div>
+                            )}
+
+                            <p className="text-gray-600">
+                              Trip: {otherTrip.from} → {otherTrip.to}
+                            </p>
+                            <p className="text-gray-600">
+                              Date: {new Date(otherTrip.date).toDateString()} @{" "}
+                              {otherTrip.time}
+                            </p>
+
+                            {chatVisibleFor === conn._id && (
+                              <div className="mt-4 border-t pt-4">
+                                <p className="text-sm text-gray-500 mb-2">
+                                  Chat with {otherUser.name}
+                                </p>
+                                <Chat
+                                  connectionId={conn._id}
+                                  currentUserId={user._id}
+                                  isTripActive={isTripActive}
+                                />
+                              </div>
+                            )}
                           </div>
 
-                          {isHovered && (
-                            <div className="absolute top-full left-0 mt-3 w-80 bg-white/90 backdrop-blur-md border border-gray-200 rounded-xl shadow-xl p-5 z-20 transition-all space-y-4">
-                              <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-full bg-[#e0e7ff] flex items-center justify-center text-[#4A90E2] shadow">
-                                  <User className="w-6 h-6" />
-                                </div>
-                                <div className="flex flex-col text-sm text-[#2D2D2D]">
-                                  <div className="flex items-center gap-2 font-semibold">
-                                    <User className="w-4 h-4" />
-                                    <span>{otherUser.name}</span>
-                                  </div>
-                                  <div className="flex items-center gap-2 text-gray-600 text-sm">
-                                    <Mail className="w-4 h-4" />
-                                    <span>{otherUser.email}</span>
-                                  </div>
-                                  <div className="flex items-center gap-2 text-gray-600 text-sm">
-                                    <User className="w-4 h-4" />
-                                    <span>
-                                      Branch:{" "}
-                                      {formatBranch(otherUser.branch) || "N/A"}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <p className="text-xs text-gray-500">
-                                You can coordinate further using the options
-                                below.
-                              </p>
-
-                              <div className="flex justify-between gap-3">
-                                <a
-                                  href={`mailto:${otherUser.email}`}
-                                  className="inline-flex items-center gap-2 text-sm bg-[#4A90E2] text-white px-4 py-2 rounded hover:bg-[#3A7AD9] transition cursor-pointer"
-                                >
-                                  <Send className="w-4 h-4" />
-                                  Send Mail
-                                </a>
-                                <a
-                                  href="/chat"
-                                  className="inline-flex items-center gap-2 text-sm bg-[#50C878] text-white px-4 py-2 rounded hover:bg-[#3DB56B] transition cursor-pointer"
-                                >
-                                  <MessageCircle className="w-4 h-4" />
-                                  Chat
-                                </a>
-                              </div>
-                            </div>
-                          )}
-
-                          <p className="text-gray-600">
-                            Trip: {otherTrip.from} → {otherTrip.to}
-                          </p>
-                          <p className="text-gray-600">
-                            Date: {new Date(otherTrip.date).toDateString()} @{" "}
-                            {otherTrip.time}
-                          </p>
-                        </div>
-
-                        <span className="mt-2 sm:mt-0 px-3 py-1 text-xs rounded-full bg-green-100 text-green-600">
-                          Connected
-                        </span>
-                      </li>
-                    );
-                  })}
+                          <span className="mt-2 sm:mt-0 px-3 py-1 text-xs rounded-full bg-green-100 text-green-600">
+                            Connected
+                          </span>
+                        </li>
+                      );
+                    })}
                 </ul>
               </>
             )}
@@ -370,8 +384,6 @@ export default function Dashboard() {
               </ul>
             )}
           </section>
-
-          
         </div>
         <FeedbackReminder />
         <Footer />

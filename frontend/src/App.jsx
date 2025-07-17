@@ -23,6 +23,7 @@ import AddTripPage from "./pages/AddTripPage";
 import Notifications from "./pages/Notifications";
 import Chat from "./pages/Chat";
 import TicketExchange from "./pages/TicketExchange";
+import ChatWrapper from "./pages/ChatWrapper";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -68,15 +69,15 @@ function App() {
           />
 
           <Route
-            path="/chat"
-            element={
-              <ProtectedRoute>
-                <MainLayout>
-                  <Chat/>
-                </MainLayout>
-              </ProtectedRoute>
-            }
-          />
+  path="/chat/:connectionId"
+  element={
+    <ProtectedRoute>
+      <MainLayout>
+        <ChatWrapper />
+      </MainLayout>
+    </ProtectedRoute>
+  }
+/>
           <Route
             path="/add-trip"
             element={

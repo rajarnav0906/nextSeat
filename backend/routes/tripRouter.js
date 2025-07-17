@@ -291,23 +291,22 @@ router.patch('/update-statuses', protect, async (req, res) => {
       const lastDateTimeB = getLatestDateTime(tripB);
 
       const latest = new Date(Math.max(lastDateTimeA.getTime(), lastDateTimeB.getTime()));
-      const bufferMs = 30 * 60 * 1000; // 30-minute buffer
-      const latestWithBuffer = new Date(latest.getTime() + bufferMs);
+const bufferMs = 6 * 60 * 60 * 1000; // 6-hour buffer
+const latestWithBuffer = new Date(latest.getTime() + bufferMs);
 
-      if (now > latestWithBuffer) {
-        // Past buffered time → mark as completed
-        await Trip.updateOne({ _id: tripA._id }, { status: 'completed' });
-        await Trip.updateOne({ _id: tripB._id }, { status: 'completed' });
-        await Connection.updateOne({ _id: conn._id }, { status: 'completed' });
+if (now > latestWithBuffer) {
+  await Trip.updateOne({ _id: tripA._id }, { status: 'completed' });
+  await Trip.updateOne({ _id: tripB._id }, { status: 'completed' });
+  await Connection.updateOne({ _id: conn._id }, { status: 'completed' });
 
-        console.log(`✅ [COMPLETED] Trips ${tripA._id} & ${tripB._id} via connection ${conn._id} (after buffer)`);
-      } else {
-        // Still upcoming within buffer → active
-        await Trip.updateOne({ _id: tripA._id }, { status: 'active' });
-        await Trip.updateOne({ _id: tripB._id }, { status: 'active' });
+  console.log(` [COMPLETED] Trips ${tripA._id} & ${tripB._id} via connection ${conn._id} (after buffer)`);
+} else {
+  await Trip.updateOne({ _id: tripA._id }, { status: 'active' });
+  await Trip.updateOne({ _id: tripB._id }, { status: 'active' });
 
-        console.log(`🟢 [ACTIVE] Trips ${tripA._id} & ${tripB._id} still within buffer window`);
-      }
+  console.log(` [ACTIVE] Trips ${tripA._id} & ${tripB._id} still within buffer window`);
+}
+
     }
 
     res.json({ message: 'Trip statuses updated' });

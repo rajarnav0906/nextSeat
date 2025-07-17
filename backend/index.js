@@ -1,33 +1,52 @@
 import dotenv from 'dotenv';
-dotenv.config(); 
+dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
+import http from 'http'; // 👈 added
+import { Server } from 'socket.io'; // 👈 added
 import connectDB from './connections/db.js';
+
 import authRouter from './routes/authRouter.js';
 import tripRouter from './routes/tripRouter.js';
 import connectionRouter from './routes/connectionRouter.js';
 import testimonialRouter from './routes/testimonialRouter.js';
+import messageRouter from './routes/messageRouter.js';
 
-// ✅ NEW: cron + models
+// cron + models
 import cron from 'node-cron';
 import Trip from './models/Trip.js';
 import Connection from './models/Connection.js';
 
+// 👇 Socket setup
+import { registerChatHandlers } from './sockets/chatSocket.js';
+
 const app = express();
+const server = http.createServer(app); // 👈 create HTTP server for socket.io
+
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:5173',
+    credentials: true,
+    methods: ['GET', 'POST'],
+  },
+});
+
+// Register socket handlers
+io.on('connection', (socket) => {
+  registerChatHandlers(io, socket);
+});
 
 const corsOptions = {
   origin: 'http://localhost:5173',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
 app.use(express.json());
-
-const PORT = process.env.PORT || 8080;
 
 // Connect to MongoDB
 connectDB();
@@ -37,13 +56,16 @@ app.use('/auth', authRouter);
 app.use('/api/trips', tripRouter);
 app.use('/api/connections', connectionRouter);
 app.use('/api/testimonials', testimonialRouter);
+app.use('/api/messages', messageRouter);
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Start server
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => {
+  console.log(`[server] 🚀 Listening on port ${PORT}`);
 });
 
-
-// ✅ Auto-completion helper function
+// -------------------
+// 🕛 CRON JOB (unchanged)
 function getLatestDateTime(trip) {
   const times = [];
 
@@ -62,8 +84,6 @@ function getLatestDateTime(trip) {
   return times.length > 0 ? new Date(Math.max(...times.map(t => t.getTime()))) : new Date(0);
 }
 
-
-//  CRON job to auto-complete trips (runs daily at 11:59 PM production time)
 cron.schedule('59 23 * * *', async () => {
   try {
     const now = new Date();

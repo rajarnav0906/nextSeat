@@ -8,46 +8,47 @@ export default function Navbar({ onMenuClick }) {
   const navigate = useNavigate();
   const [pendingCount, setPendingCount] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [hasAlert, setHasAlert] = useState(false);
 
-  useEffect(() => {
-    const userData = localStorage.getItem("user-info");
-    if (!userData) {
-      // console.log("🔒 [Navbar] No user found — hiding bell");
-      return;
-    }
+useEffect(() => {
+  const userData = localStorage.getItem("user-info");
+  if (!userData) return;
 
-    try {
-      const parsed = JSON.parse(userData);
-      const token = parsed?.token;
-      if (!token) {
-        // console.log("🔒 [Navbar] Token missing in user-info");
-        return;
+  try {
+    const parsed = JSON.parse(userData);
+    const token = parsed?.token;
+    if (!token) return;
+
+    setIsLoggedIn(true);
+
+    const checkAlerts = async () => {
+      try {
+        const [reqRes, unreadRes] = await Promise.all([
+          axios.get("http://localhost:8080/api/connections/notifications", {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get("http://localhost:8080/api/messages/unread", {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+
+        const hasPending = reqRes.data.length > 0;
+        const hasUnread = Object.keys(unreadRes.data || {}).length > 0;
+
+        setHasAlert(hasPending || hasUnread);
+      } catch (err) {
+        console.error("❌ [Navbar] Notification check failed:", err.message);
       }
+    };
 
-      setIsLoggedIn(true);
+    checkAlerts();
+    const interval = setInterval(checkAlerts, 60000);
+    return () => clearInterval(interval);
+  } catch (err) {
+    console.error("❌ [Navbar] User info parse error:", err.message);
+  }
+}, []);
 
-      const fetchNotifications = async () => {
-        try {
-          const res = await axios.get("http://localhost:8080/api/connections/notifications", {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
-          setPendingCount(res.data.length);
-          // console.log(`🔔 [Navbar] Loaded ${res.data.length} pending requests`);
-        } catch (err) {
-          console.error("❌ [Navbar] Failed to fetch notifications:", err.response?.data || err.message);
-        }
-      };
-
-      fetchNotifications();
-
-      const interval = setInterval(fetchNotifications, 60000);
-      return () => clearInterval(interval);
-    } catch (err) {
-      console.error("❌ [Navbar] Failed to parse user-info:", err.message);
-    }
-  }, []);
 
   return (
     <div className="flex justify-between items-center bg-gray-50 px-4 sm:px-6 lg:px-8 pt-4 pb-2 shadow-sm z-30 relative">
@@ -61,13 +62,14 @@ export default function Navbar({ onMenuClick }) {
       <div className="flex items-center gap-4">
         {/* 🔔 Notification Bell (only if logged in) */}
         {isLoggedIn && (
-          <div className="relative cursor-pointer" onClick={() => navigate('/notifications')}>
-            <Bell className="w-6 h-6 text-[#4A90E2]" />
-            {pendingCount > 0 && (
-              <span className="absolute top-[-2px] right-[-2px] h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse" />
-            )}
-          </div>
-        )}
+  <div className="relative cursor-pointer" onClick={() => navigate('/notifications')}>
+    <Bell className="w-6 h-6 text-[#4A90E2]" />
+    {hasAlert && (
+      <span className="absolute top-[-2px] right-[-2px] h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse" />
+    )}
+  </div>
+)}
+
 
         {/* ☰ Hamburger */}
         <button

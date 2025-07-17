@@ -202,6 +202,11 @@ export const hasUserSubmitted = async (userId) => {
   return res.data.submitted; // true or false
 };
 
+export const api = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true,
+  headers: getAuthHeader()
+});
 
 
 
