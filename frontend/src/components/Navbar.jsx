@@ -12,7 +12,7 @@ export default function Navbar({ onMenuClick }) {
   useEffect(() => {
     const userData = localStorage.getItem("user-info");
     if (!userData) {
-      console.log("🔒 [Navbar] No user found — hiding bell");
+      // console.log("🔒 [Navbar] No user found — hiding bell");
       return;
     }
 
@@ -20,7 +20,7 @@ export default function Navbar({ onMenuClick }) {
       const parsed = JSON.parse(userData);
       const token = parsed?.token;
       if (!token) {
-        console.log("🔒 [Navbar] Token missing in user-info");
+        // console.log("🔒 [Navbar] Token missing in user-info");
         return;
       }
 
@@ -34,7 +34,7 @@ export default function Navbar({ onMenuClick }) {
             }
           });
           setPendingCount(res.data.length);
-          console.log(`🔔 [Navbar] Loaded ${res.data.length} pending requests`);
+          // console.log(`🔔 [Navbar] Loaded ${res.data.length} pending requests`);
         } catch (err) {
           console.error("❌ [Navbar] Failed to fetch notifications:", err.response?.data || err.message);
         }

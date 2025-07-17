@@ -99,4 +99,3 @@ cron.schedule('59 23 * * *', async () => {
     console.error("❌ [CRON ERROR] Trip auto-completion failed:", err.message);
   }
 });
-

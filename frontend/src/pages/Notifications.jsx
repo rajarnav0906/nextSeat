@@ -25,7 +25,7 @@ function Notifications() {
         });
         setRequests(res.data);
       } catch (err) {
-        console.error("❌ Failed to load requests:", err);
+        // console.error("❌ Failed to load requests:", err);
         toast.error("Failed to load notifications");
       }
     };
@@ -45,7 +45,7 @@ function Notifications() {
       toast.success(`Request ${status}`);
       navigate('/travel');
     } catch (err) {
-      console.error("❌ Failed to respond:", err.response?.data || err.message);
+      // console.error("❌ Failed to respond:", err.response?.data || err.message);
       toast.error("Failed to respond to request");
     }
   };
