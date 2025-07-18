@@ -6,32 +6,23 @@ import { oauth2client } from '../utils/googleConfig.js';
 import crypto from 'crypto';
 import sendVerificationEmail from '../utils/sendVerificationEmail.js';
 
-// Google login
+// Google login using ID Token
 export const googleLogin = async (req, res) => {
   try {
-    const { code } = req.query;
-    if (!code) {
-      return res.status(400).json({ 
-        success: false,
-        message: "Authorization code is required" 
-      });
-    }
+    console.log("[Google Login] Received:", req.body);
+    const { idToken } = req.body;
 
-    const { tokens } = await oauth2client.getToken(code);
-    oauth2client.setCredentials(tokens);
+    if (!idToken) return res.status(400).json({ message: "Missing tokenId" });
 
-    const { data } = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: `Bearer ${tokens.access_token}` }
+    const ticket = await oauth2client.verifyIdToken({
+      idToken: idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
     });
 
-    const { email, name, picture, sub: googleId } = data;
+    const payload = ticket.getPayload();
+    const { email, name, picture, sub: googleId } = payload;
 
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: "Could not get email from Google"
-      });
-    }
+    if (!email) return res.status(400).json({ message: "Google account missing email" });
 
     let user = await User.findOne({ $or: [{ email }, { googleId }] });
 
@@ -54,10 +45,10 @@ export const googleLogin = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { 
-        _id: user._id, 
+      {
+        _id: user._id,
         email: user.email,
-        authMethod: user.authMethod 
+        authMethod: user.authMethod
       },
       process.env.JWT_SECRET,
       { expiresIn: '5d' }
@@ -79,21 +70,12 @@ export const googleLogin = async (req, res) => {
       }
     });
 
-  } catch (error) {
-    console.error('Google login error:', error);
-    if (error.response?.data?.error === 'invalid_grant') {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid authorization code. Please try again."
-      });
-    }
-
-    res.status(500).json({ 
-      success: false,
-      message: 'Failed to authenticate with Google' 
-    });
+  } catch (err) {
+    console.error("Google login error:", err);
+    return res.status(500).json({ message: "Google login failed", error: err.message });
   }
 };
+
 
 // Manual signup
 export const signup = async (req, res) => {

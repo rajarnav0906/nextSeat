@@ -21,15 +21,17 @@ export const manualSignup = async (data) => {
   }
 };
 
-// Google Auth
-export const googleAuth = async (code) => {
+// api.js
+export const googleAuth = async (idToken) => {
   try {
-    return await auth.get(`/google?code=${code}`);
+    return await auth.post('/google', { idToken });
   } catch (error) {
     console.error('Google auth error:', error);
     throw error;
   }
 };
+
+
 
 // Manual Login
 export const manualLogin = async (data) => {

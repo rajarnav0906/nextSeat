@@ -11,7 +11,7 @@ router.get('/test', (req, res) => {
 });
 
 // Google OAuth
-router.get('/google', googleLogin);
+router.post('/google', googleLogin);
 
 // Manual Signup (with email verification)
 router.post('/signup', signup);
