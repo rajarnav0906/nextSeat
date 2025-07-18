@@ -69,21 +69,23 @@ function App() {
           />
 
           <Route
-  path="/chat/:connectionId"
-  element={
-    <ProtectedRoute>
-      <MainLayout>
-        <ChatWrapper />
-      </MainLayout>
-    </ProtectedRoute>
-  }
-/>
+            path="/chat/:connectionId"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <ChatWrapper />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/add-trip"
             element={
-              <MainLayout>
-                <AddTripPage />
-              </MainLayout>
+              <ProtectedRoute>
+                <MainLayout>
+                  <AddTripPage />
+                </MainLayout>
+              </ProtectedRoute>
             }
           />
           <Route

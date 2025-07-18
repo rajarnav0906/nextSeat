@@ -54,25 +54,24 @@ router.get('/unread', protect, async (req, res) => {
 
     res.json(unreadMap);
   } catch (err) {
-    console.error('❌ [unread] Failed to enrich trips:', err.message);
+    console.error('[unread] Failed to enrich trips:', err.message);
     res.status(500).json({ error: 'Failed to load unread messages' });
   }
 });
 
 
-// GET /api/messages/:connectionId
 router.get('/:connectionId', protect, async (req, res) => {
   const { connectionId } = req.params;
 
   try {
     const messages = await Message.find({ connectionId })
       .sort({ createdAt: 1 })
-      .populate('sender', 'name email'); // optional
+      .populate('sender', 'name email');
 
-    console.log(`[api] 📨 Loaded ${messages.length} messages for ${connectionId}`);
+    // console.log(`[api] Loaded ${messages.length} messages for ${connectionId}`);
     res.json(messages);
   } catch (err) {
-    console.error('[api] ❌ Failed to fetch messages:', err.message);
+    // console.error('[api] Failed to fetch messages:', err.message);
     res.status(500).json({ error: 'Failed to load messages' });
   }
 });
@@ -85,22 +84,19 @@ router.post('/mark-read/:connectionId', protect, async (req, res) => {
     const result = await Message.updateMany(
       {
         connectionId,
-        sender: { $ne: userId }, // only mark messages from the other user
+        sender: { $ne: userId },
         read: false,
       },
       { $set: { read: true } }
     );
 
-    console.log(`✅ Marked ${result.modifiedCount} messages as read for ${userId}`);
+    // console.log(`Marked ${result.modifiedCount} messages as read for ${userId}`);
     res.json({ success: true });
   } catch (err) {
-    console.error('❌ Failed to mark messages as read:', err.message);
+    console.error('Failed to mark messages as read:', err.message);
     res.status(500).json({ error: 'Could not mark messages as read' });
   }
 });
-
-
-
 
 
 

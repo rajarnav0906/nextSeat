@@ -6,7 +6,7 @@ const PublicRoute = ({ children }) => {
 
   // Only block access to login/signup if user is already logged in
   if (user && (location.pathname === "/login" || location.pathname === "/signup")) {
-    return <Navigate to="/dashboard" />;
+    return <Navigate to="/dashboard" state={{ from: location }} replace />;
   }
 
   return children;

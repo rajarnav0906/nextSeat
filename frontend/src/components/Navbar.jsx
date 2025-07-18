@@ -24,10 +24,10 @@ useEffect(() => {
     const checkAlerts = async () => {
       try {
         const [reqRes, unreadRes] = await Promise.all([
-          axios.get("http://localhost:8080/api/connections/notifications", {
+          axios.get(`${import.meta.env.VITE_BACKEND_URL}/connections/notifications`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get("http://localhost:8080/api/messages/unread", {
+          axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/messages/unread`, {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
@@ -37,7 +37,7 @@ useEffect(() => {
 
         setHasAlert(hasPending || hasUnread);
       } catch (err) {
-        console.error("❌ [Navbar] Notification check failed:", err.message);
+        console.error(" [Navbar] Notification check failed:", err.message);
       }
     };
 
@@ -45,7 +45,7 @@ useEffect(() => {
     const interval = setInterval(checkAlerts, 60000);
     return () => clearInterval(interval);
   } catch (err) {
-    console.error("❌ [Navbar] User info parse error:", err.message);
+    console.error(" [Navbar] User info parse error:", err.message);
   }
 }, []);
 
@@ -60,7 +60,7 @@ useEffect(() => {
       />
 
       <div className="flex items-center gap-4">
-        {/* 🔔 Notification Bell (only if logged in) */}
+        {/* Notification Bell (only if logged in) */}
         {isLoggedIn && (
   <div className="relative cursor-pointer" onClick={() => navigate('/notifications')}>
     <Bell className="w-6 h-6 text-[#4A90E2]" />
@@ -71,7 +71,7 @@ useEffect(() => {
 )}
 
 
-        {/* ☰ Hamburger */}
+        {/* Hamburger */}
         <button
           onClick={onMenuClick}
           className="block md:hidden text-[#4A90E2] p-2 focus:outline-none cursor-pointer"

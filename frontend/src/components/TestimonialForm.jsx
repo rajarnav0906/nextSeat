@@ -35,12 +35,12 @@ export default function TestimonialForm() {
     try {
       const payload = { ...data, rating, userId: user._id, name: user.name };
       await postTestimonial(payload);
-      setSuccess("✅ Thank you for your feedback!");
+      setSuccess(" Thank you for your feedback!");
       setSubmitted(true);
       reset();
       setRating(0);
     } catch (err) {
-      console.error("❌ Submission failed:", err.message);
+      console.error(" Submission failed:", err.message);
     }
   };
 

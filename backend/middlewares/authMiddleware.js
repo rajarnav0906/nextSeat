@@ -12,7 +12,7 @@ export const protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded._id || decoded.id; // 🔥 this fixes the issue
+    const userId = decoded._id || decoded.id;
     const user = await User.findById(userId).select('-password');
 
     if (!user) {

@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-const AUTH_BASE = 'http://localhost:8080/auth';
-const API_BASE = 'http://localhost:8080/api';
+const BACKEND = import.meta.env.VITE_BACKEND_URL;
+const AUTH_BASE = `${BACKEND}/auth`;
+const API_BASE = `${BACKEND}/api`;
 
 // -------------------- Auth API --------------------
 
@@ -38,6 +39,7 @@ export const manualLogin = async (data) => {
     console.error('Manual login error:', error);
     throw error;
   }
+
 };
 
 // Upload ID Card
@@ -54,165 +56,105 @@ export const uploadIdCard = async (formData) => {
   }
 };
 
-// -------------------- Trip API --------------------
+// -------------------- Auth Header --------------------
 
-// 🔐 Safely get token from localStorage
 const getToken = () => {
   try {
-    const parsed = JSON.parse(localStorage.getItem("user-info"));
-    return parsed?.token; // ✅ token is directly here
+    const parsed = JSON.parse(localStorage.getItem('user-info'));
+    return parsed?.token;
   } catch {
     return null;
   }
 };
 
-
 const getAuthHeader = () => ({
-  Authorization: `Bearer ${getToken()}`
+  Authorization: `Bearer ${getToken()}`,
 });
 
-// Get your own trips
+// -------------------- Trip APIs --------------------
+
 export const getMyTrips = async () => {
   const res = await axios.get(`${API_BASE}/trips/mine`, {
-    headers: getAuthHeader()
+    headers: getAuthHeader(),
   });
   return res.data;
 };
-
-// Discover matches for a trip
-// Discover matches for a trip (with debug)
-export const discoverMatches = async (tripId) => {
-  try {
-    const res = await axios.get(`${API_BASE}/trips/discover/${tripId}`, {
-      headers: getAuthHeader()
-    });
-    console.log("📡 [discoverMatches] Response for tripId:", tripId, res.data);
-    return res.data;
-  } catch (err) {
-    console.error("❌ [discoverMatches] API error:", err);
-    throw err;
-  }
-};
-
 
 export const createTrip = async (tripData) => {
-  const token = JSON.parse(localStorage.getItem("user-info"))?.token;
-  const res = await axios.post("http://localhost:8080/api/trips", tripData, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+  const res = await axios.post(`${API_BASE}/trips`, tripData, {
+    headers: getAuthHeader(),
   });
   return res.data;
 };
 
-// delete the trip
-// Delete a trip
 export const deleteTrip = async (tripId) => {
-  try {
-    const headers = getAuthHeader();
-    console.log("🛡️ Sending DELETE with headers:", headers);
-
-    const res = await axios.delete(`${API_BASE}/trips/${tripId}`, {
-      headers
-    });
-
-    console.log("✅ Trip deleted from backend:", res.data);
-    return res.data;
-  } catch (err) {
-    console.error("❌ Failed to delete trip. Error:", err.response?.data || err.message);
-    throw err;
-  }
+  const res = await axios.delete(`${API_BASE}/trips/${tripId}`, {
+    headers: getAuthHeader(),
+  });
+  return res.data;
 };
 
+export const discoverMatches = async (tripId) => {
+  const res = await axios.get(`${API_BASE}/trips/discover/${tripId}`, {
+    headers: getAuthHeader(),
+  });
+  // console.log('[discoverMatches]', tripId, res.data);
+  return res.data;
+};
 
-// Send connection request
+// -------------------- Connection APIs --------------------
+
 export const sendConnectionRequest = async (tripId, matchedTripId) => {
-  try {
-    const res = await axios.post(
-      `http://localhost:8080/api/connections`,
-      { tripId, matchedTripId },
-      { headers: getAuthHeader() }
-    );
-    console.log("✅ [sendConnectionRequest] Sent:", res.data);
-    return res.data;
-  } catch (err) {
-    console.error("❌ [sendConnectionRequest] Error:", err.response?.data || err.message);
-    throw err;
-  }
+  const res = await axios.post(
+    `${API_BASE}/connections`,
+    { tripId, matchedTripId },
+    { headers: getAuthHeader() }
+  );
+  return res.data;
 };
 
-// Fetch existing connection status
 export const getConnectionStatus = async () => {
-  try {
-    const res = await axios.get(`http://localhost:8080/api/connections/mine`, {
-      headers: getAuthHeader()
-    });
-    return res.data; // list of connections
-  } catch (err) {
-    console.error("❌ [getConnectionStatus] Error:", err.response?.data || err.message);
-    return [];
-  }
+  const res = await axios.get(`${API_BASE}/connections/mine`, {
+    headers: getAuthHeader(),
+  });
+  return res.data;
 };
-
 
 export const getAcceptedConnections = async () => {
-  try {
-    const res = await axios.get('http://localhost:8080/api/connections/accepted', {
-      headers: getAuthHeader()
-    });
-    console.log("👥 [getAcceptedConnections] Loaded", res.data.length);
-    return res.data;
-  } catch (err) {
-    console.error("❌ [getAcceptedConnections] error:", err.response?.data || err.message);
-    return [];
-  }
+  const res = await axios.get(`${API_BASE}/connections/accepted`, {
+    headers: getAuthHeader(),
+  });
+  return res.data;
 };
 
+// export const getConnectionById = async (connectionId) => {
+//   const res = await axios.get(`${API_BASE}/connections/${connectionId}`, {
+//     headers: getAuthHeader(),
+//   });
+//   return res.data;
+// };
 
 
+// -------------------- Testimonial APIs --------------------
 
-// Add this function
 export const getTestimonials = async () => {
-  try {
-    const res = await axios.get("/api/testimonials");
-    console.log("✅ Testimonials fetched:", res.data);
-    return res.data;
-  } catch (err) {
-    console.error("❌ Error fetching testimonials:", err.message);
-    throw err;
-  }
+  const res = await axios.get(`${API_BASE}/testimonials`);
+  return res.data;
 };
-
 
 export const postTestimonial = async (data) => {
-  try {
-    const res = await axios.post('/api/testimonials', data);
-    console.log('✅ Testimonial submitted:', res.data);
-    return res.data;
-  } catch (err) {
-    console.error('❌ Error submitting testimonial:', err.message);
-    throw err;
-  }
+  const res = await axios.post(`${API_BASE}/testimonials`, data);
+  return res.data;
 };
-
-
 
 export const hasUserSubmitted = async (userId) => {
-  const res = await axios.get(`/api/testimonials/user/${userId}`);
-  return res.data.submitted; // true or false
+  const res = await axios.get(`${API_BASE}/testimonials/user/${userId}`);
+  return res.data.submitted;
 };
 
+// Optional: export a pre-configured axios instance
 export const api = axios.create({
   baseURL: API_BASE,
   withCredentials: true,
-  headers: getAuthHeader()
+  headers: getAuthHeader(),
 });
-
-
-
-
-
-
-
-
-

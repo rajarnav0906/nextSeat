@@ -21,12 +21,12 @@ function Notifications() {
   useEffect(() => {
     const fetchAllNotifications = async () => {
       try {
-        const reqRes = await axios.get('http://localhost:8080/api/connections/notifications', {
+        const reqRes = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/connections/notifications`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setRequests(reqRes.data);
 
-        const unreadRes = await axios.get('http://localhost:8080/api/messages/unread', {
+        const unreadRes = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/messages/unread`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -39,7 +39,7 @@ function Notifications() {
         setUnreadMessages(enriched);
       } catch (err) {
         toast.error('Failed to load some notifications');
-        console.warn('🔴 Notification fetch error:', err.message);
+        console.warn(' Notification fetch error:', err.message);
       }
     };
 
@@ -48,7 +48,7 @@ function Notifications() {
 
   const handleRespond = async (id, status) => {
     try {
-      const res = await axios.put(`http://localhost:8080/api/connections/${id}`, {
+      const res = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/connections/${id}`, {
         status
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -137,7 +137,7 @@ function Notifications() {
               >
                 <div className="text-[#2D2D2D]">
                   <div className="font-medium">
-                    💬 You have {msg.count} new message{msg.count > 1 ? 's' : ''} on trip:
+                    You have {msg.count} new message{msg.count > 1 ? 's' : ''} on trip:
                   </div>
                   <div className="text-gray-600">
                     {msg.trip.from} → {msg.trip.to}

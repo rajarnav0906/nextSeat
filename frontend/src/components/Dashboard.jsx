@@ -18,7 +18,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import FeedbackReminder from "../components/FeedbackReminder.jsx";
-import Chat from '../pages/Chat.jsx';
+import Chat from "../pages/Chat.jsx";
 import { useRefresh } from "../context/RefreshContext.jsx";
 
 export default function Dashboard() {
@@ -30,7 +30,6 @@ export default function Dashboard() {
   const [companions, setCompanions] = useState([]);
   const [hovered, setHovered] = useState(null);
   const [chatVisibleFor, setChatVisibleFor] = useState(null);
-  
 
   const user = JSON.parse(localStorage.getItem("user-info"));
   const sidebarWidth = collapsed ? 72 : 240;
@@ -241,8 +240,9 @@ export default function Dashboard() {
                       if (!otherTrip) return null;
 
                       const isHovered = hovered === conn._id;
-                      const isTripActive = conn.tripId?.status !== 'completed' && conn.matchedTripId?.status !== 'completed';
-
+                      const isTripActive =
+                        conn.tripId?.status !== "completed" &&
+                        conn.matchedTripId?.status !== "completed";
 
                       return (
                         <li
@@ -296,13 +296,13 @@ export default function Dashboard() {
                                     Send Mail
                                   </a>
                                   <Link
-  to={`/chat/${conn._id}`}
-  className="inline-flex items-center gap-2 text-sm bg-[#50C878] text-white px-4 py-2 rounded hover:bg-[#3DB56B] transition cursor-pointer"
->
-  <MessageCircle className="w-4 h-4" />
-  Chat
-</Link>
-
+                                    to={`/chat/${conn._id}`}
+                                    className="inline-flex items-center gap-2 text-sm bg-[#50C878] text-white px-4 py-2 rounded hover:bg-[#3DB56B] transition cursor-pointer"
+                                    onClick={() => window.scrollTo(0, 0)}
+                                  >
+                                    <MessageCircle className="w-4 h-4" />
+                                    Chat
+                                  </Link>
                                 </div>
                               </div>
                             )}

@@ -3,8 +3,8 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
-import http from 'http'; // 👈 added
-import { Server } from 'socket.io'; // 👈 added
+import http from 'http'; 
+import { Server } from 'socket.io';
 import connectDB from './connections/db.js';
 
 import authRouter from './routes/authRouter.js';
@@ -18,15 +18,15 @@ import cron from 'node-cron';
 import Trip from './models/Trip.js';
 import Connection from './models/Connection.js';
 
-// 👇 Socket setup
+// Socket setup
 import { registerChatHandlers } from './sockets/chatSocket.js';
 
 const app = express();
-const server = http.createServer(app); // 👈 create HTTP server for socket.io
+const server = http.createServer(app); 
 
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: process.env.CLIENT_URL,
     credentials: true,
     methods: ['GET', 'POST'],
   },
@@ -38,7 +38,7 @@ io.on('connection', (socket) => {
 });
 
 const corsOptions = {
-  origin: 'http://localhost:5173',
+  origin: process.env.CLIENT_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -61,11 +61,10 @@ app.use('/api/messages', messageRouter);
 // Start server
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => {
-  console.log(`[server] 🚀 Listening on port ${PORT}`);
+  console.log(`Server Listening on port ${PORT}`);
 });
 
-// -------------------
-// 🕛 CRON JOB (unchanged)
+//CRON JOB 
 function getLatestDateTime(trip) {
   const times = [];
 
@@ -87,7 +86,7 @@ function getLatestDateTime(trip) {
 cron.schedule('59 23 * * *', async () => {
   try {
     const now = new Date();
-    console.log("🌙 [CRON] Running trip auto-completion check @", now.toISOString());
+    // console.log("[CRON] Running trip auto-completion check @", now.toISOString());
 
     const connections = await Connection.find({ status: 'accepted' })
       .populate('tripId')
@@ -98,7 +97,7 @@ cron.schedule('59 23 * * *', async () => {
       const tripB = conn.matchedTripId;
 
       if (!tripA || !tripB) {
-        console.warn("⚠️ Skipping connection with missing trip:", conn._id);
+        // console.warn("Skipping connection with missing trip:", conn._id);
         continue;
       }
 
@@ -112,10 +111,10 @@ cron.schedule('59 23 * * *', async () => {
         await Trip.updateOne({ _id: tripB._id }, { status: 'completed' });
         await Connection.updateOne({ _id: conn._id }, { status: 'completed' });
 
-        console.log(`✅ [AUTO COMPLETED] Trips ${tripA._id}, ${tripB._id} via connection ${conn._id}`);
+        // console.log(`[AUTO COMPLETED] Trips ${tripA._id}, ${tripB._id} via connection ${conn._id}`);
       }
     }
   } catch (err) {
-    console.error("❌ [CRON ERROR] Trip auto-completion failed:", err.message);
+    console.error(" [CRON ERROR] Trip auto-completion failed:", err.message);
   }
 });

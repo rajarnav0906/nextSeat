@@ -57,11 +57,11 @@ const IDUpload = () => {
     const formData = new FormData();
     formData.append("frontImage", frontFile);
     formData.append("backImage", backFile);
-    formData.append("userId", userId);
+    formData.append("userId", userId);    
 
     try {
       setUploading(true);
-      const res = await axios.post("http://localhost:8080/auth/upload-id", formData, {
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/upload-id`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

@@ -17,7 +17,7 @@ export default function TestimonialsSection() {
     fetchData();
   }, []);
 
-  const allTestimonials = [...testimonials, ...testimonials]; // for infinite effect
+  const allTestimonials = [...testimonials, ...testimonials]; 
 
   return (
     <section className="bg-gradient-to-br from-[#F5F7FA] to-[#EAF0F8] py-20 px-6">

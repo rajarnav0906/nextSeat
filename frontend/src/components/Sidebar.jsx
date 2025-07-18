@@ -6,6 +6,7 @@ import {
   Route,
   Ticket,
   User,
+  PlusCircle
 } from "lucide-react";
 
 export default function Sidebar({ collapsed, onToggle, mobileOpen, setMobileOpen }) {
@@ -66,7 +67,6 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, setMobileOpen
           {/* Collapse Button */}
           <div className="flex justify-center mt-4">
             <button onClick={onToggle} className="text-[#4A90E2] hover:text-[#3A7AD9] transition cursor-pointer">
-
               <motion.svg
                 width="24"
                 height="24"
@@ -106,41 +106,42 @@ function SidebarUser({ user, collapsed }) {
 }
 
 function SidebarNav({ location, collapsed, onLinkClick, user }) {
-  const items = [
+  const baseItems = [
     { to: "/", icon: <Home size={18} />, label: "Home" },
     { to: "/travel", icon: <Route size={18} />, label: "Travel Together" },
     { to: "/tickets", icon: <Ticket size={18} />, label: "Ticket Exchange" },
   ];
 
+  // Protected Items
   const dashboardItem = {
     to: "/dashboard",
     icon: (
-      <svg
-        className="w-5 h-5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-      >
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
         <path d="M3 3v18h18V3H3zm3 3h3v3H6V6zm0 6h3v3H6v-3zm0 6h3v3H6v-3zm6-12h3v3h-3V6zm0 6h3v3h-3v-3zm0 6h3v3h-3v-3zm6-12h3v3h-3V6zm0 6h3v3h-3v-3z"></path>
       </svg>
     ),
     label: "Dashboard",
   };
 
-  const showDashboard =
-    user?.isVerified &&
-    user?.branch &&
-    user.branch !== "null" &&
-    user.branch !== "" &&
-    user?.declaredGender &&
-    user.declaredGender !== "null" &&
-    user.declaredGender !== "";
+  const addTripItem = {
+    to: "/add-trip",
+    icon: <PlusCircle size={18} />,
+    label: "Add Trip"
+  };
+
+  // Check if user has completed profile (same logic for both dashboard and add trip)
+  const hasCompletedProfile = user?.isVerified && 
+                             user?.branch && 
+                             user.branch !== "null" && 
+                             user.branch !== "" && 
+                             user?.declaredGender && 
+                             user.declaredGender !== "null" && 
+                             user.declaredGender !== "";
 
   return (
     <nav className="space-y-3 w-full mt-2 relative">
-      {items.map(({ to, icon, label }) => (
+      {/* Base items (always visible) */}
+      {baseItems.map(({ to, icon, label }) => (
         <SidebarItem
           key={to}
           to={to}
@@ -152,17 +153,29 @@ function SidebarNav({ location, collapsed, onLinkClick, user }) {
         />
       ))}
 
-      {showDashboard && (
-        <SidebarItem
-          to={dashboardItem.to}
-          icon={dashboardItem.icon}
-          label={dashboardItem.label}
-          collapsed={collapsed}
-          active={location.pathname === dashboardItem.to}
-          onClick={onLinkClick}
-        />
+      {/* Protected items (only visible with completed profile) */}
+      {hasCompletedProfile && (
+        <>
+          <SidebarItem
+            to={dashboardItem.to}
+            icon={dashboardItem.icon}
+            label={dashboardItem.label}
+            collapsed={collapsed}
+            active={location.pathname === dashboardItem.to}
+            onClick={onLinkClick}
+          />
+          <SidebarItem
+            to={addTripItem.to}
+            icon={addTripItem.icon}
+            label={addTripItem.label}
+            collapsed={collapsed}
+            active={location.pathname === addTripItem.to}
+            onClick={onLinkClick}
+          />
+        </>
       )}
 
+      {/* Auth items */}
       {!user ? (
         <SidebarItem
           to="/login"
@@ -180,7 +193,7 @@ function SidebarNav({ location, collapsed, onLinkClick, user }) {
           redOutline
           onClick={() => {
             localStorage.removeItem("user-info");
-            window.location.href = "/login";
+            navigate("/login", { replace: true });
           }}
         />
       )}
@@ -211,7 +224,7 @@ function SidebarItem({ to, icon, label, collapsed, active, onClick, redOutline }
         {label}
       </motion.span>
 
-      {/* Previous Better Hover Tooltip */}
+      {/* Hover Tooltip */}
       {collapsed && (
         <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-sm px-2 py-1 rounded shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 pointer-events-none whitespace-nowrap">
           {label}
@@ -222,12 +235,10 @@ function SidebarItem({ to, icon, label, collapsed, active, onClick, redOutline }
 
   return to ? (
     <Link to={to} onClick={onClick} className={className + " cursor-pointer"}>
-
       {content}
     </Link>
   ) : (
     <button onClick={onClick} className={className + " w-full text-left cursor-pointer"}>
-
       {content}
     </button>
   );

@@ -152,7 +152,7 @@ export default function TripForm() {
     transition={{ duration: 0.3, delay: i * 0.1 }}
     className="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-xl shadow-sm border border-gray-200"
   >
-    {/* ❌ Red 'X' Remove Button (inside box, top right) */}
+    
     <button
       onClick={() => {
         const updated = [...legs];
