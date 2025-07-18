@@ -193,7 +193,7 @@ function SidebarNav({ location, collapsed, onLinkClick, user }) {
           redOutline
           onClick={() => {
             localStorage.removeItem("user-info");
-            navigate("/login", { replace: true });
+            window.location.href = "/login";
           }}
         />
       )}

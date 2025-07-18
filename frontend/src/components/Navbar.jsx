@@ -24,7 +24,7 @@ useEffect(() => {
     const checkAlerts = async () => {
       try {
         const [reqRes, unreadRes] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_BACKEND_URL}/connections/notifications`, {
+          axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/connections/notifications`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
           axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/messages/unread`, {
