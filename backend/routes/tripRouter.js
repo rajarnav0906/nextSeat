@@ -16,40 +16,34 @@ function isTimeClose(time1, time2, marginMinutes = 360) {
 
 // Create a new trip
 router.post("/", protect, async (req, res) => {
-  const { from, to, hasConnections, legs, date, time, genderPreference } =
-    req.body;
+  const { from, to, hasConnections, legs, date, time, genderPreference } = req.body;
 
   if (!from || !to || !date || !time) {
     return res.status(400).json({ message: "Required fields missing" });
   }
 
+  const fromClean = from.trim().toLowerCase();
+  const toClean = to.trim().toLowerCase();
+
   if (hasConnections) {
     if (!legs || !Array.isArray(legs) || legs.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "Legs must be provided for connected trips." });
+      return res.status(400).json({ message: "Legs must be provided for connected trips." });
     }
 
     const firstLeg = legs[0];
     const lastLeg = legs[legs.length - 1];
 
-    if (firstLeg.from.toLowerCase() !== from.toLowerCase()) {
-      return res
-        .status(400)
-        .json({ message: 'First leg "from" must match trip "from".' });
+    if (firstLeg.from.trim().toLowerCase() !== fromClean) {
+      return res.status(400).json({ message: 'First leg "from" must match trip "from".' });
     }
 
-    if (lastLeg.to.toLowerCase() !== to.toLowerCase()) {
-      return res
-        .status(400)
-        .json({ message: 'Last leg "to" must match trip "to".' });
+    if (lastLeg.to.trim().toLowerCase() !== toClean) {
+      return res.status(400).json({ message: 'Last leg "to" must match trip "to".' });
     }
 
     for (const leg of legs) {
       if (!leg.from || !leg.to || !leg.date || !leg.time) {
-        return res
-          .status(400)
-          .json({ message: "Each leg must have from, to, date, and time." });
+        return res.status(400).json({ message: "Each leg must have from, to, date, and time." });
       }
     }
   }
@@ -57,10 +51,16 @@ router.post("/", protect, async (req, res) => {
   try {
     const trip = await Trip.create({
       user: req.user._id,
-      from,
-      to,
+      from: fromClean,
+      to: toClean,
       hasConnections: !!hasConnections,
-      legs: hasConnections ? legs : [],
+      legs: hasConnections
+        ? legs.map((leg) => ({
+            ...leg,
+            from: leg.from.trim().toLowerCase(),
+            to: leg.to.trim().toLowerCase(),
+          }))
+        : [],
       date,
       time,
       genderPreference,
@@ -68,9 +68,7 @@ router.post("/", protect, async (req, res) => {
 
     res.status(201).json(trip);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Trip creation failed", error: err.message });
+    res.status(500).json({ message: "Trip creation failed", error: err.message });
   }
 });
 
@@ -173,11 +171,11 @@ router.get("/discover/:tripId", protect, async (req, res) => {
     };
 
     const isLegMatch = (legA, legB) =>
-      legA.from.toLowerCase() === legB.from.toLowerCase() &&
-      legA.to.toLowerCase() === legB.to.toLowerCase() &&
-      new Date(legA.date).toISOString().slice(0, 10) ===
-        new Date(legB.date).toISOString().slice(0, 10) &&
-      isTimeClose(legA.time, legB.time);
+  legA.from.trim().toLowerCase() === legB.from.trim().toLowerCase() &&
+  legA.to.trim().toLowerCase() === legB.to.trim().toLowerCase() &&
+  new Date(legA.date).toISOString().slice(0, 10) ===
+    new Date(legB.date).toISOString().slice(0, 10) &&
+  isTimeClose(legA.time, legB.time);
 
     const mutualGender = (tripA, tripB) => {
       if (!tripA?.user || !tripB?.user) {

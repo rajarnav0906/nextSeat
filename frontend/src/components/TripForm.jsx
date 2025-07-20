@@ -10,7 +10,7 @@ import {
   PlusCircle,
   CheckCircle2,
   ChevronDown,
-  X
+  X,
 } from "lucide-react";
 import tripImage from "../../src/images/trip_add.png";
 import { motion } from "framer-motion";
@@ -25,7 +25,6 @@ export default function TripForm() {
   const [hasConnections, setHasConnections] = useState(false);
   const [legs, setLegs] = useState([]);
   const navigate = useNavigate();
-
 
   const addLeg = () => {
     setLegs([...legs, { from: "", to: "", date: "", time: "" }]);
@@ -59,16 +58,32 @@ export default function TripForm() {
     }
 
     try {
+      const clean = (text) => text.trim().toLowerCase();
+
       const payload = {
-        from, to, date, time, genderPreference,
+        from: clean(from),
+        to: clean(to),
+        date,
+        time,
+        genderPreference,
         hasConnections,
-        legs: hasConnections ? legs : []
+        legs: hasConnections
+          ? legs.map((leg) => ({
+              ...leg,
+              from: clean(leg.from),
+              to: clean(leg.to),
+            }))
+          : [],
       };
 
       await createTrip(payload);
       toast.success("Trip created!");
-      setFrom(""); setTo(""); setDate(""); setTime("");
-      setLegs([]); setHasConnections(false);
+      setFrom("");
+      setTo("");
+      setDate("");
+      setTime("");
+      setLegs([]);
+      setHasConnections(false);
       navigate("/travel");
     } catch (err) {
       toast.error("Trip creation failed.");
@@ -90,38 +105,67 @@ export default function TripForm() {
               <MapPin className="w-6 h-6 text-[#4A90E2]" /> Plan Your Journey
             </h2>
             <p className="text-sm text-gray-600">
-              Fill out your journey details below to create a new trip. You can optionally add connected train legs.
+              Fill out your journey details below to create a new trip. You can
+              optionally add connected train legs.
             </p>
           </div>
 
-          <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
+          <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col">
               <label className="text-sm text-[#2D2D2D] mb-1">From</label>
-              <input type="text" value={from} onChange={e => setFrom(e.target.value)} className="input px-4 py-3 text-[#2D2D2D]" placeholder="Origin station" />
+              <input
+                type="text"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+                className="input px-4 py-3 text-[#2D2D2D]"
+                placeholder="Origin station"
+              />
             </div>
             <div className="flex flex-col">
               <label className="text-sm text-[#2D2D2D] mb-1">To</label>
-              <input type="text" value={to} onChange={e => setTo(e.target.value)} className="input px-4 py-3 text-[#2D2D2D]" placeholder="Destination station" />
+              <input
+                type="text"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+                className="input px-4 py-3 text-[#2D2D2D]"
+                placeholder="Destination station"
+              />
             </div>
             <div className="flex flex-col">
-              <label className="text-sm text-[#2D2D2D] mb-1 flex items-center gap-1"><CalendarDays className="w-4 h-4 text-[#4A90E2]" /> Date</label>
-              <input type="date" value={date} onChange={e => setDate(e.target.value)} className="input px-4 py-3 text-[#2D2D2D]" />
+              <label className="text-sm text-[#2D2D2D] mb-1 flex items-center gap-1">
+                <CalendarDays className="w-4 h-4 text-[#4A90E2]" /> Date
+              </label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="input px-4 py-3 text-[#2D2D2D]"
+              />
             </div>
             <div className="flex flex-col">
-              <label className="text-sm text-[#2D2D2D] mb-1 flex items-center gap-1"><Clock className="w-4 h-4 text-[#4A90E2]" /> Time</label>
-              <input type="time" value={time} onChange={e => setTime(e.target.value)} className="input px-4 py-3 text-[#2D2D2D]" step="900" />
+              <label className="text-sm text-[#2D2D2D] mb-1 flex items-center gap-1">
+                <Clock className="w-4 h-4 text-[#4A90E2]" /> Time
+              </label>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="input px-4 py-3 text-[#2D2D2D]"
+                step="900"
+              />
             </div>
           </motion.div>
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <label className="flex flex-col text-sm text-[#2D2D2D]">
               <span className="flex items-center gap-2">
-                <UserCheck className="w-5 h-5 text-[#4A90E2]" /> Gender Preference:
+                <UserCheck className="w-5 h-5 text-[#4A90E2]" /> Gender
+                Preference:
               </span>
               <div className="relative mt-1">
                 <select
                   value={genderPreference}
-                  onChange={e => setGenderPreference(e.target.value)}
+                  onChange={(e) => setGenderPreference(e.target.value)}
                   className="appearance-none border p-3 pr-10 rounded w-full text-[#2D2D2D] focus:outline-none"
                 >
                   <option value="any">Any</option>
@@ -134,7 +178,11 @@ export default function TripForm() {
 
             <label className="flex items-center gap-2 text-[#2D2D2D]">
               <CheckCircle2 className="w-5 h-5 text-[#4A90E2]" />
-              <input type="checkbox" checked={hasConnections} onChange={e => setHasConnections(e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={hasConnections}
+                onChange={(e) => setHasConnections(e.target.checked)}
+              />
               <span className="text-sm">Include Connected Trains</span>
             </label>
           </div>
@@ -145,33 +193,55 @@ export default function TripForm() {
                 <LinkIcon className="w-4 h-4 text-[#4A90E2]" /> Connected Legs
               </h4>
               {legs.map((leg, i) => (
-  <motion.div
-    key={i}
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.3, delay: i * 0.1 }}
-    className="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-xl shadow-sm border border-gray-200"
-  >
-    
-    <button
-      onClick={() => {
-        const updated = [...legs];
-        updated.splice(i, 1);
-        setLegs(updated);
-      }}
-      type="button"
-      title="Remove leg"
-      className="absolute top-2 right-2 text-red-500 hover:text-red-600 transition"
-    >
-      <X className="w-4 h-4" strokeWidth={2} />
-    </button>
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: i * 0.1 }}
+                  className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-xl shadow-sm border border-gray-200"
+                >
+                  <button
+                    onClick={() => {
+                      const updated = [...legs];
+                      updated.splice(i, 1);
+                      setLegs(updated);
+                    }}
+                    type="button"
+                    title="Remove leg"
+                    className="absolute top-2 right-2 text-red-500 hover:text-red-600 transition"
+                  >
+                    <X className="w-4 h-4" strokeWidth={2} />
+                  </button>
 
-    <input type="text" placeholder="From" value={leg.from} onChange={e => updateLeg(i, "from", e.target.value)} className="input px-3 py-2 text-[#2D2D2D]" />
-    <input type="text" placeholder="To" value={leg.to} onChange={e => updateLeg(i, "to", e.target.value)} className="input px-3 py-2 text-[#2D2D2D]" />
-    <input type="date" value={leg.date} onChange={e => updateLeg(i, "date", e.target.value)} className="input px-3 py-2 text-[#2D2D2D]" />
-    <input type="time" value={leg.time} onChange={e => updateLeg(i, "time", e.target.value)} className="input px-3 py-2 text-[#2D2D2D]" step="900" />
-  </motion.div>
-))}
+                  <input
+                    type="text"
+                    placeholder="From"
+                    value={leg.from}
+                    onChange={(e) => updateLeg(i, "from", e.target.value)}
+                    className="input px-3 py-2 text-[#2D2D2D]"
+                  />
+                  <input
+                    type="text"
+                    placeholder="To"
+                    value={leg.to}
+                    onChange={(e) => updateLeg(i, "to", e.target.value)}
+                    className="input px-3 py-2 text-[#2D2D2D]"
+                  />
+                  <input
+                    type="date"
+                    value={leg.date}
+                    onChange={(e) => updateLeg(i, "date", e.target.value)}
+                    className="input px-3 py-2 text-[#2D2D2D]"
+                  />
+                  <input
+                    type="time"
+                    value={leg.time}
+                    onChange={(e) => updateLeg(i, "time", e.target.value)}
+                    className="input px-3 py-2 text-[#2D2D2D]"
+                    step="900"
+                  />
+                </motion.div>
+              ))}
 
               <motion.button
                 type="button"
@@ -201,9 +271,13 @@ export default function TripForm() {
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
-          className="w-full hidden lg:flex justify-center"
+          className="w-full hidden xl:flex justify-center"
         >
-          <img src={tripImage} alt="Trip Visual" className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-md h-auto object-contain" />
+          <img
+            src={tripImage}
+            alt="Trip Visual"
+            className="w-full max-w-xs sm:max-w-sm md:max-w-md h-auto object-contain"
+          />
         </motion.div>
       </div>
     </div>

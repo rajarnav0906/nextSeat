@@ -9,11 +9,28 @@ export const registerChatHandlers = (io, socket) => {
   // console.log(`[socket]  New connection: ${socket.id}`);
 
   // Join user to connection-specific room
-  socket.on("joinRoom", ({ connectionId, userId }) => {
+  socket.on("joinRoom", async ({ connectionId, userId }) => {
+  try {
+    const connection = await Connection.findById(connectionId);
+    if (!connection) return;
+
+    const isParticipant =
+      connection.fromUser.toString() === userId ||
+      connection.toUser.toString() === userId;
+
+    if (!isParticipant) {
+      console.warn(`[SECURITY] User ${userId} tried to join unauthorized room ${connectionId}`);
+      return;
+    }
+
     socket.join(connectionId);
     activeUsers.set(userId, socket.id);
     // console.log(`[socket]  User ${userId} joined room ${connectionId}`);
-  });
+  } catch (err) {
+    console.error(`[joinRoom] error for user ${userId}:`, err.message);
+  }
+});
+
 
   // Handle incoming message
   socket.on("sendMessage", async ({ connectionId, senderId, text }) => {

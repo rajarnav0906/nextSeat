@@ -13,7 +13,7 @@ function RefreshHandler({setIsAuthenticated}) {
         if(token){
             setIsAuthenticated(true);
             if(location.pathname === '/login' || location.pathname === '/signup'){
-                navigate('/dashboard', {replace : false});
+                navigate('/dashboard');
             }
         }
     }, [location, navigate, setIsAuthenticated])
