@@ -1,4 +1,3 @@
-// index.js
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -52,7 +51,7 @@ app.use(express.json());
 connectDB();
 
 // ---------------------------
-// Routes (keep /auth as requested)
+// Routes 
 // ---------------------------
 app.use('/auth', authRouter);
 app.use('/api/trips', tripRouter);
@@ -61,11 +60,11 @@ app.use('/api/testimonials', testimonialRouter);
 app.use('/api/messages', messageRouter);
 
 // ---------------------------
-/* Trip auto-complete logic (IST-safe) */
+/* Trip auto-complete logic  */
 // ---------------------------
 const TZ = 'Asia/Kolkata';
 
-// yyyy-mm-dd for a Date in a given timezone (not UTC)
+// yyyy-mm-dd for a Date in a given timezone 
 function ymdInTZ(d, tz) {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit'
@@ -149,9 +148,9 @@ app.post('/internal/cron/complete-trips', async (req, res) => {
 });
 
 // ---------------------------
-// node-cron (local + best-effort prod): daily at 3:03 PM IST
+// node-cron
 // ---------------------------
-cron.schedule('20 15 * * *', async () => {
+cron.schedule('59 23 * * *', async () => {
   try {
     await autoCompleteTripsNow();
   } catch (err) {
