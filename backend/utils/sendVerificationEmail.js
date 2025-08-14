@@ -13,8 +13,14 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendVerificationEmail = async (email, token) => {
-//   const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
-  const verificationLink = `${process.env.BACKEND_URL}/auth/verify-email?token=${token}`;
+  
+  const base = process.env.API_BASE_URL?.replace(/\/+$/, '');
+  if (!base) {
+    throw new Error("API_BASE_URL is not set in environment variables");
+  }
+
+  
+  const verificationLink = `${base}/auth/verify-email?token=${encodeURIComponent(token)}`;
 
 
   const mailOptions = {
@@ -45,9 +51,10 @@ const sendVerificationEmail = async (email, token) => {
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log(' Email sent:', info.response);
+    console.log('Email sent:', info.response);
   } catch (err) {
-    console.error(' Email failed:', err.message);
+    console.error('Email failed:', err.message);
+    throw err;
   }
 };
 

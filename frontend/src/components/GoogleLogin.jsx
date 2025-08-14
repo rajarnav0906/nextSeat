@@ -92,7 +92,7 @@ const GoogleLoginPage = () => {
 
             <div className="text-center text-gray-500 my-5 text-sm">or</div>
 
-            {/* ✅ Google Login */}
+            {/*  Google Login */}
             <div className="w-full flex justify-center">
               <GoogleLogin
                 onSuccess={async (credentialResponse) => {
