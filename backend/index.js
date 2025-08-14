@@ -150,7 +150,7 @@ app.post('/internal/cron/complete-trips', async (req, res) => {
 
 // ---------------------------
 // Scheduled cron job to auto-complete trips daily at 2:53 PM IST
-cron.schedule('03 15 * * *', async () => {
+cron.schedule('7 15 * * *', async () => {
   try {
     await autoCompleteTripsNow();
   } catch (err) {
