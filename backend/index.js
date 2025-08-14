@@ -1,3 +1,4 @@
+// index.js
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -19,7 +20,7 @@ import Connection from './models/Connection.js';
 import { registerChatHandlers } from './sockets/chatSocket.js';
 
 // ---------------------------
-// App + Socket.IO 
+// App + Socket.IO
 // ---------------------------
 const app = express();
 const server = http.createServer(app);
@@ -51,7 +52,7 @@ app.use(express.json());
 connectDB();
 
 // ---------------------------
-// Routes
+// Routes (keep /auth as requested)
 // ---------------------------
 app.use('/auth', authRouter);
 app.use('/api/trips', tripRouter);
@@ -60,11 +61,11 @@ app.use('/api/testimonials', testimonialRouter);
 app.use('/api/messages', messageRouter);
 
 // ---------------------------
-// Trip auto-complete logic
+/* Trip auto-complete logic (IST-safe) */
 // ---------------------------
 const TZ = 'Asia/Kolkata';
 
-// yyyy-mm-dd for a Date in a given timezone
+// yyyy-mm-dd for a Date in a given timezone (not UTC)
 function ymdInTZ(d, tz) {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit'
@@ -72,12 +73,11 @@ function ymdInTZ(d, tz) {
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
-
+// Combine a stored Date + "HH:MM" into a real Date in IST (+05:30)
 function combineDateTimeInTZ(dateObj, hhmm, tz) {
   if (!dateObj || !hhmm) return null;
   const [hh, mm] = hhmm.split(':').map(Number);
   const ymd = ymdInTZ(dateObj, tz);
-  
   return new Date(`${ymd}T${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:00+05:30`);
 }
 
@@ -101,7 +101,7 @@ function latestPlannedTime(trip, tz = TZ) {
 async function autoCompleteTripsNow() {
   const now = new Date();
 
-  // 1) Connected trips
+  // 1) Connected trips: mark both trips + connection when latest time has passed
   const connections = await Connection.find({ status: 'accepted' })
     .populate('tripId')
     .populate('matchedTripId');
@@ -123,7 +123,7 @@ async function autoCompleteTripsNow() {
     }
   }
 
-  // 2) Standalone trips (no accepted connections)
+  // 2) Standalone trips (no accepted connections): mark when past due
   const activeTrips = await Trip.find({ status: { $in: ['active', 'pending'] } });
   for (const t of activeTrips) {
     const latest = latestPlannedTime(t);
@@ -149,8 +149,9 @@ app.post('/internal/cron/complete-trips', async (req, res) => {
 });
 
 // ---------------------------
-// Scheduled cron job to auto-complete trips daily at 2:53 PM IST
-cron.schedule('7 15 * * *', async () => {
+// node-cron (local + best-effort prod): daily at 3:03 PM IST
+// ---------------------------
+cron.schedule('20 15 * * *', async () => {
   try {
     await autoCompleteTripsNow();
   } catch (err) {
