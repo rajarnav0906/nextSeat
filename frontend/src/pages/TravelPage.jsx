@@ -96,7 +96,7 @@ export default function TravelPage() {
     const match = connections.find(
       (c) =>
         (c.tripId === myTripId && c.matchedTripId === theirTripId) ||
-        (c.tripId === theirTripId && c.matchedTripId === myTripId)
+        (c.tripId === theirTripId && c.matchedTripId === myTripId) 
     );
     return match?.status || "none";
   };

@@ -85,6 +85,23 @@ const Chat = ({ connectionId, currentUserId, isTripActive }) => {
     }
   };
 
+  // Helper: format date divider
+  const formatDateDivider = (date) => {
+    const d = new Date(date);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    if (d.toDateString() === today.toDateString()) return "Today";
+    if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
+
+    return d.toLocaleDateString([], {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   return (
     <div className="w-full h-[90vh] max-w-6xl mx-auto bg-white rounded-3xl shadow-xl p-4 md:p-6 flex flex-col">
       <ToastContainer />
@@ -128,43 +145,59 @@ const Chat = ({ connectionId, currentUserId, isTripActive }) => {
             </div>
           ) : (
             <AnimatePresence>
-              {messages.map((msg) => {
+              {messages.map((msg, index) => {
                 const senderId =
                   typeof msg.sender === "object" ? msg.sender._id : msg.sender;
                 const senderName =
                   typeof msg.sender === "object" ? msg.sender.name : "User";
                 const isMine = senderId === currentUserId;
 
+                const currentDate = new Date(msg.createdAt).toDateString();
+                const prevDate =
+                  index > 0
+                    ? new Date(messages[index - 1].createdAt).toDateString()
+                    : null;
+
+                const showDivider = currentDate !== prevDate;
+
                 return (
-                  <motion.div
-                    key={msg._id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className={`w-full flex ${
-                      isMine ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    <div
-                      className={`max-w-[75%] px-4 py-2 rounded-2xl shadow-sm transition-all duration-200 ease-in-out ${
-                        isMine
-                          ? "bg-[#E6F9F0] text-[#2D2D2D] rounded-br-none"
-                          : "bg-[#E5F1FD] text-[#2D2D2D] rounded-bl-none"
-                      } text-xs sm:text-sm md:text-base`}
+                  <div key={msg._id}>
+                    {showDivider && (
+                      <div className="flex justify-center my-3">
+                        <span className="bg-gray-200 text-gray-700 text-xs px-3 py-1 rounded-full">
+                          {formatDateDivider(msg.createdAt)}
+                        </span>
+                      </div>
+                    )}
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className={`w-full flex ${
+                        isMine ? "justify-end" : "justify-start"
+                      }`}
                     >
-                      <div className="font-semibold mb-1">
-                        {isMine ? "You" : senderName}
+                      <div
+                        className={`max-w-[75%] px-4 py-2 rounded-2xl shadow-sm transition-all duration-200 ease-in-out ${
+                          isMine
+                            ? "bg-[#E6F9F0] text-[#2D2D2D] rounded-br-none"
+                            : "bg-[#E5F1FD] text-[#2D2D2D] rounded-bl-none"
+                        }`}
+                      >
+                        <div className="font-semibold mb-1">
+                          {isMine ? "You" : senderName}
+                        </div>
+                        <div>{msg.text}</div>
+                        <div className="text-[10px] sm:text-xs text-gray-400 mt-1 text-right">
+                          {new Date(msg.createdAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </div>
                       </div>
-                      <div>{msg.text}</div>
-                      <div className="text-[10px] sm:text-xs text-gray-400 mt-1 text-right">
-                        {new Date(msg.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </div>
-                    </div>
-                  </motion.div>
+                    </motion.div>
+                  </div>
                 );
               })}
               <div ref={messagesEndRef} />
