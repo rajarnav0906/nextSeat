@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -25,22 +25,26 @@ import {
 } from "lucide-react";
 
 const IDUpload = () => {
+  const navigate = useNavigate();
+
   const [uploading, setUploading] = useState(false);
   const [userId, setUserId] = useState(null);
+
   const [collapsed, setCollapsed] = useState(false);
   const [isDesktop, setIsDesktop] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [consentGiven, setConsentGiven] = useState(false);
+  const sidebarWidth = collapsed ? 72 : 240;
 
-  const frontRef = useRef(null);
-  const backRef = useRef(null);
+  // ✅ Source of truth
+  const [frontFile, setFrontFile] = useState(null);
+  const [backFile, setBackFile] = useState(null);
 
   const [frontFileName, setFrontFileName] = useState("");
   const [backFileName, setBackFileName] = useState("");
 
-  const navigate = useNavigate();
-  const sidebarWidth = collapsed ? 72 : 240;
+  const [consentGiven, setConsentGiven] = useState(false);
 
+  /* -------------------- EFFECT -------------------- */
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem("user-info"));
     if (userInfo?._id) {
@@ -56,25 +60,31 @@ const IDUpload = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, [navigate]);
 
-  const injectFile = async (src, name, ref, setName) => {
+  /* -------------------- DUMMY FILE -------------------- */
+  const useDummyFile = async (src, name, setter, nameSetter) => {
     const res = await fetch(src);
     const blob = await res.blob();
     const file = new File([blob], name, { type: blob.type });
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    ref.current.files = dt.files;
-    setName(name);
+    setter(file);
+    nameSetter(name);
   };
 
+  /* -------------------- UPLOAD -------------------- */
   const handleUpload = async () => {
-    const frontFile = frontRef.current?.files[0];
-    const backFile = backRef.current?.files[0];
+    if (!frontFile || !backFile) {
+      toast.error("Please upload both sides of ID card");
+      return;
+    }
 
-    if (!frontFile || !backFile)
-      return toast.error("Please upload both sides of ID card");
+    if (!consentGiven) {
+      toast.error("You must give consent to continue");
+      return;
+    }
 
-    if (!consentGiven)
-      return toast.error("You must give consent to continue");
+    if (!userId) {
+      toast.error("Session expired. Please login again.");
+      return;
+    }
 
     const formData = new FormData();
     formData.append("frontImage", frontFile);
@@ -83,9 +93,11 @@ const IDUpload = () => {
 
     try {
       setUploading(true);
+
       const res = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/auth/upload-id`,
-        formData
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
 
       if (res.data?.user?.declaredGender && res.data?.user?.branch) {
@@ -106,11 +118,10 @@ const IDUpload = () => {
     }
   };
 
-  /* ---------------- MODERN FILE BOX ---------------- */
-  const UploadBox = ({ title, fileName, inputRef, setFileName }) => (
-    <div
-      onClick={() => inputRef.current.click()}
-      className={`border rounded-xl p-4 cursor-pointer transition
+  /* -------------------- UPLOAD BOX -------------------- */
+  const UploadBox = ({ title, fileName, onChange }) => (
+    <label
+      className={`block border rounded-xl p-4 cursor-pointer transition
         ${
           fileName
             ? "border-green-500 bg-green-50"
@@ -118,11 +129,13 @@ const IDUpload = () => {
         }`}
     >
       <input
-        ref={inputRef}
         type="file"
         accept="image/*"
         hidden
-        onChange={(e) => setFileName(e.target.files[0]?.name || "")}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onChange(file);
+        }}
       />
 
       <div className="flex items-center gap-4">
@@ -132,7 +145,7 @@ const IDUpload = () => {
           <ImageIcon className="w-8 h-8 text-gray-400" />
         )}
 
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold">{title}</p>
           {fileName ? (
             <p className="text-xs text-green-700 truncate">
@@ -147,7 +160,7 @@ const IDUpload = () => {
 
         <Upload className="w-4 h-4 text-gray-400" />
       </div>
-    </div>
+    </label>
   );
 
   return (
@@ -198,24 +211,44 @@ const IDUpload = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <button
+                  type="button"
                   onClick={() =>
-                    injectFile(dummyFront, "dummy_front.jpg", frontRef, setFrontFileName)
+                    useDummyFile(
+                      dummyFront,
+                      "dummy_front.jpg",
+                      setFrontFile,
+                      setFrontFileName
+                    )
                   }
-                  className="border rounded-lg p-3 hover:bg-white"
+                  className="border rounded-lg p-3 hover:bg-white transition"
                 >
-                  <img src={dummyFront} className="h-28 mx-auto mb-2 object-contain" />
+                  <img
+                    src={dummyFront}
+                    alt="Dummy Front"
+                    className="h-28 mx-auto mb-2 object-contain"
+                  />
                   <p className="text-xs font-medium text-center">
                     Use Dummy Front
                   </p>
                 </button>
 
                 <button
+                  type="button"
                   onClick={() =>
-                    injectFile(dummyBack, "dummy_back.jpg", backRef, setBackFileName)
+                    useDummyFile(
+                      dummyBack,
+                      "dummy_back.jpg",
+                      setBackFile,
+                      setBackFileName
+                    )
                   }
-                  className="border rounded-lg p-3 hover:bg-white"
+                  className="border rounded-lg p-3 hover:bg-white transition"
                 >
-                  <img src={dummyBack} className="h-28 mx-auto mb-2 object-contain" />
+                  <img
+                    src={dummyBack}
+                    alt="Dummy Back"
+                    className="h-28 mx-auto mb-2 object-contain"
+                  />
                   <p className="text-xs font-medium text-center">
                     Use Dummy Back
                   </p>
@@ -228,14 +261,19 @@ const IDUpload = () => {
               <UploadBox
                 title="Upload Front Side"
                 fileName={frontFileName}
-                inputRef={frontRef}
-                setFileName={setFrontFileName}
+                onChange={(file) => {
+                  setFrontFile(file);
+                  setFrontFileName(file.name);
+                }}
               />
+
               <UploadBox
                 title="Upload Back Side"
                 fileName={backFileName}
-                inputRef={backRef}
-                setFileName={setBackFileName}
+                onChange={(file) => {
+                  setBackFile(file);
+                  setBackFileName(file.name);
+                }}
               />
             </div>
 
@@ -250,15 +288,20 @@ const IDUpload = () => {
             </label>
 
             <button
+              type="button"
               onClick={handleUpload}
               disabled={uploading}
-              className="w-full py-2 bg-green-500 text-white rounded-md"
+              className="w-full py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition"
             >
               {uploading ? "Uploading..." : "Submit"}
             </button>
           </div>
 
-          <img src={idCardImage} className="max-w-md w-full" />
+          <img
+            src={idCardImage}
+            alt="ID Illustration"
+            className="max-w-md w-full"
+          />
         </div>
 
         <Footer />
