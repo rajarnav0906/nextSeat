@@ -77,7 +77,7 @@ export default function TripForm() {
       };
 
       await createTrip(payload);
-      toast.success("Trip created!");
+      toast.success("Trip created!"); 
       setFrom("");
       setTo("");
       setDate("");

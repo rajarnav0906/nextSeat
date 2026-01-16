@@ -126,7 +126,7 @@ export default function SignupPage() {
 
             <div className="text-center text-gray-500 my-4 text-sm">or</div>
 
-            {/* ✅ Google Signup Button */}
+            {/* Google Signup Button */}
             <div className="w-full flex justify-center">
               <GoogleLogin
                 onSuccess={async (credentialResponse) => {
